@@ -1,15 +1,17 @@
-import { IsDecimal, IsOptional, IsString } from "class-validator";
+import { IsDecimal, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { TypeAccount } from "generated/prisma";
 
 export class CreateAccountDto {
 
   @IsString()
+  @IsNotEmpty()
   name: string
 
-  @IsString()
-  @IsOptional()
-  type?: string
+  @IsEnum(TypeAccount)
+  type?: TypeAccount
 
   @IsDecimal({ decimal_digits: '2' })
+  @IsNotEmpty()
   balance: number
 
 }

@@ -36,7 +36,7 @@ export class AuthController {
       expires: new Date(Date.now() + 86400000)
     })
 
-    return { message: 'User created succesfully', user: rest }
+    return { message: 'User login succesfully', user: rest }
 
   }
 

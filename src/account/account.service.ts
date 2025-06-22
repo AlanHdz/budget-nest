@@ -119,24 +119,24 @@ export class AccountService {
 
   private handleErrors(error: any) : never {
   
-      if (error.response) {
-        throw new InternalServerErrorException(error.response)
-      }
-      
-      this.logger.error(error);
-  
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-
-      if (
-        error instanceof PrismaClientKnownRequestError &&
-        error.code === 'P2025'
-      ) {
-        throw new NotFoundException('The account does not exist or does not belong to you');
-      }
-  
-      throw new InternalServerErrorException(error)
-  
+    if (error.response) {
+      throw new InternalServerErrorException(error.response)
     }
+    
+    this.logger.error(error);
+
+    if (error instanceof BadRequestException) {
+      throw error;
+    }
+
+    if (
+      error instanceof PrismaClientKnownRequestError &&
+      error.code === 'P2025'
+    ) {
+      throw new NotFoundException('The account does not exist or does not belong to you');
+    }
+
+    throw new InternalServerErrorException(error)
+  
+  }
 }

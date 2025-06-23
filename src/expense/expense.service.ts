@@ -49,6 +49,21 @@ export class ExpenseService {
           data: {
             ...createExpenseDto,
             userId: user.id
+          },
+          include: {
+            account: {
+              select: {
+                id: true,
+                name: true,
+                type: true
+              }
+            },
+            category: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
           }
         })
 
@@ -62,11 +77,30 @@ export class ExpenseService {
 
   }
 
-  async findAll(user: User) {
+  async findAll(user: User) : Promise<Expense[]> {
     
     try {
+
+      const expenses = await this.prisma.expense.findMany({
+        where: { userId: user.id },
+        include: {
+          account: {
+            select: {
+              id: true,
+              name: true,
+              type: true
+            }
+          },
+          category: {
+            select: {
+              id: true,
+              name: true
+            }
+          }
+        }
+      })
       
-      
+      return expenses;
 
     } catch (error) {
       this.handleErrors(error)
@@ -74,16 +108,152 @@ export class ExpenseService {
 
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} expense`;
+  async findOne(id: string, user) : Promise<Expense> {
+  
+    try {
+      
+      const expense = await this.prisma.expense.findUnique({
+        where: { userId: user.id, id: id },
+        include: {
+          account: {
+            select: {
+              id: true,
+              name: true,
+              type: true
+            }
+          },
+          category: {
+            select: {
+              id: true,
+              name: true
+            }
+          }
+        }
+      })
+      
+      if (!expense) {
+        throw new NotFoundException('Gasto no encontrado')
+      }
+
+      return expense;
+
+    } catch (error) {
+      this.handleErrors(error)
+    }
+
   }
 
-  update(id: number, updateExpenseDto: UpdateExpenseDto) {
-    return `This action updates a #${id} expense`;
+  async update(id: string, updateExpenseDto: UpdateExpenseDto, user: User) : Promise<Expense> {
+    
+    try {
+
+      const expenseOriginal = await this.prisma.expense.findFirst({
+      where: { id: id, userId: user.id }
+    })
+
+    if (!expenseOriginal) {
+      throw new NotFoundException(`El gasto solicitado no fue encontrado`)
+    }
+
+    return this.prisma.$transaction(async (prismaTx) => {
+
+      await prismaTx.account.update({
+        where: { id: expenseOriginal.accountId },
+        data: {
+          balance: {
+            increment: expenseOriginal.amount
+          }
+        }
+      })
+
+      const newAmount = updateExpenseDto.amount ?? expenseOriginal.amount;
+      const newAccountId = updateExpenseDto.accountId ?? expenseOriginal.accountId;
+
+      const account = await prismaTx.account.findUnique({ where: { id: newAccountId } })
+
+      if (!account) {
+        throw new NotFoundException(`La cuenta destino no fue encontrada`)
+      }
+
+      if (account.balance < newAmount) {
+         throw new BadRequestException(`Saldo insuficiente en la cuenta de destino para actualizar el gasto.`);
+      }
+
+      const accountUpdate = await prismaTx.account.update({
+        where: { id: updateExpenseDto.accountId },
+        data: {
+          balance: {
+            decrement: updateExpenseDto.amount
+          }
+        }
+      })
+
+      const expense = await prismaTx.expense.update({
+        where: { id: id },
+        data: {
+          ...updateExpenseDto
+        },
+        include: {
+          account: {
+            select: {
+              id: true,
+              name: true,
+              type: true
+            }
+          },
+          category: {
+            select: {
+              id: true,
+              name: true
+            }
+          }
+        }
+      })
+
+      return expense;
+
+    })
+
+      
+    } catch (error) {
+      this.handleErrors(error)
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} expense`;
+  async remove(id: string, user: User) {
+    
+    try {
+      
+      const expense = await this.prisma.expense.findFirst({
+        where: { id: id, userId: user.id }
+      })
+
+      if (!expense) {
+        throw new NotFoundException(`El gasto no fue encontrado`)
+      }
+
+      return this.prisma.$transaction(async (prismaTx) => {
+        
+        await prismaTx.account.update({
+          where: { id: expense.accountId },
+          data: {
+            balance: {
+              increment: expense.amount
+            }
+          }
+        })
+
+        await prismaTx.expense.delete({
+          where: { id: id, userId: user.id }
+        })
+
+      })
+
+
+    } catch (error) {
+      this.handleErrors(error)  
+    }
+
   }
 
   private handleErrors(error: any) : never {

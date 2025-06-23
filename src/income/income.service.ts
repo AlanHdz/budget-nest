@@ -140,7 +140,7 @@ export class IncomeService {
 
       return this.prisma.$transaction(async (prismaTx) => {
 
-        await this.prisma.account.update({
+        await prismaTx.account.update({
           where: { id: incomeOriginal.accountId },
           data: {
             balance: {
@@ -149,7 +149,7 @@ export class IncomeService {
           }
         })
 
-        await this.prisma.account.update({
+        await prismaTx.account.update({
           where: { id: accountId },
           data: {
             balance: {
@@ -158,7 +158,7 @@ export class IncomeService {
           }
         })
 
-        const updateIncome = await this.prisma.income.update({
+        const updateIncome = await prismaTx.income.update({
           where: { id, userId: user.id },
           data: {
             ...updateIncomeDto,

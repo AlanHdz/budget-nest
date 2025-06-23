@@ -4,6 +4,7 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { JwtGuard } from 'src/auth/guards/auth.guard';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { User } from 'generated/prisma';
 
 @Controller('expenses')
 export class ExpenseController {
@@ -11,27 +12,31 @@ export class ExpenseController {
 
   @Post()
   @UseGuards(JwtGuard)
-  create(@Body() createExpenseDto: CreateExpenseDto, @GetUser() user) {
+  create(@Body() createExpenseDto: CreateExpenseDto, @GetUser() user: User) {
     return this.expenseService.create(createExpenseDto, user);
   }
 
   @Get()
-  findAll() {
-    return this.expenseService.findAll();
+  @UseGuards(JwtGuard)
+  findAll(@GetUser() user) {
+    return this.expenseService.findAll(user);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.expenseService.findOne(+id);
+  @UseGuards(JwtGuard)
+  findOne(@Param('id') id: string, @GetUser() user: User) {
+    return this.expenseService.findOne(id, user);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateExpenseDto: UpdateExpenseDto) {
-    return this.expenseService.update(+id, updateExpenseDto);
+  @UseGuards(JwtGuard)
+  update(@Param('id') id: string, @Body() updateExpenseDto: UpdateExpenseDto, @GetUser() user: User) {
+    return this.expenseService.update(id, updateExpenseDto, user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.expenseService.remove(+id);
+  @UseGuards(JwtGuard)
+  remove(@Param('id') id: string, @GetUser() user: User) {
+    return this.expenseService.remove(id, user);
   }
 }

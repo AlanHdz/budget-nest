@@ -190,7 +190,7 @@ export class IncomeService {
 
       await prismaTX.account.update({
         where: { 
-          id: incomeOriginal.id,
+          id: incomeOriginal.accountId,
         },
         data: {
           balance: {

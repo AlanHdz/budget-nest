@@ -1,8 +1,10 @@
-import { IsDecimal, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
+import { IsDecimal, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUUID } from "class-validator";
 
 export class CreateExpenseDto {
 
-  @IsDecimal({ decimal_digits: '2' })
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @IsNotEmpty()
+  @IsPositive()
   amount: number;
 
   @IsString()

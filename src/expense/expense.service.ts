@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { Expense, User } from 'generated/prisma';
@@ -147,80 +147,83 @@ export class ExpenseService {
     
     try {
 
+      const { amount } = updateExpenseDto;
+      console.log(typeof amount);
+      
       const expenseOriginal = await this.prisma.expense.findFirst({
-      where: { id: id, userId: user.id }
-    })
-
-    if (!expenseOriginal) {
-      throw new NotFoundException(`El gasto solicitado no fue encontrado`)
-    }
-
-    return this.prisma.$transaction(async (prismaTx) => {
-
-      await prismaTx.account.update({
-        where: { id: expenseOriginal.accountId },
-        data: {
-          balance: {
-            increment: expenseOriginal.amount
-          }
-        }
+        where: { id: id, userId: user.id }
       })
 
-      const newAmount = updateExpenseDto.amount ?? expenseOriginal.amount;
-      const newAccountId = updateExpenseDto.accountId ?? expenseOriginal.accountId;
-
-      const account = await prismaTx.account.findUnique({ where: { id: newAccountId } })
-
-      if (!account) {
-        throw new NotFoundException(`La cuenta destino no fue encontrada`)
+      if (!expenseOriginal) {
+        throw new NotFoundException(`El gasto solicitado no fue encontrado`)
       }
 
-      if (account.balance < newAmount) {
-         throw new BadRequestException(`Saldo insuficiente en la cuenta de destino para actualizar el gasto.`);
-      }
+      return this.prisma.$transaction(async (prismaTx) => {
 
-      const accountUpdate = await prismaTx.account.update({
-        where: { id: updateExpenseDto.accountId },
-        data: {
-          balance: {
-            decrement: updateExpenseDto.amount
-          }
-        }
-      })
-
-      const expense = await prismaTx.expense.update({
-        where: { id: id },
-        data: {
-          ...updateExpenseDto
-        },
-        include: {
-          account: {
-            select: {
-              id: true,
-              name: true,
-              type: true
+        await prismaTx.account.update({
+          where: { id: expenseOriginal.accountId },
+          data: {
+            balance: {
+              increment: expenseOriginal.amount
             }
+          }
+        })
+
+        const newAmount = updateExpenseDto.amount ?? expenseOriginal.amount;
+        const newAccountId = updateExpenseDto.accountId ?? expenseOriginal.accountId;
+
+        const account = await prismaTx.account.findUnique({ where: { id: newAccountId } })
+
+        if (!account) {
+          throw new NotFoundException(`La cuenta destino no fue encontrada`)
+        }
+
+        if (account.balance < newAmount) {
+          throw new BadRequestException(`Saldo insuficiente en la cuenta de destino para actualizar el gasto.`);
+        }
+
+        const accountUpdate = await prismaTx.account.update({
+          where: { id: updateExpenseDto.accountId },
+          data: {
+            balance: {
+              decrement: updateExpenseDto.amount
+            }
+          }
+        })
+
+
+        const expense = await prismaTx.expense.update({
+          where: { id: id },
+          data: {
+            ...updateExpenseDto
           },
-          category: {
-            select: {
-              id: true,
-              name: true
+          include: {
+            account: {
+              select: {
+                id: true,
+                name: true,
+                type: true
+              }
+            },
+            category: {
+              select: {
+                id: true,
+                name: true
+              }
             }
           }
-        }
+        })
+
+        return expense;
+
       })
-
-      return expense;
-
-    })
-
       
     } catch (error) {
       this.handleErrors(error)
     }
   }
 
-  async remove(id: string, user: User) {
+  async remove(id: string, user: User) : Promise<Object> {
     
     try {
       
@@ -232,7 +235,7 @@ export class ExpenseService {
         throw new NotFoundException(`El gasto no fue encontrado`)
       }
 
-      return this.prisma.$transaction(async (prismaTx) => {
+      this.prisma.$transaction(async (prismaTx) => {
         
         await prismaTx.account.update({
           where: { id: expense.accountId },
@@ -249,6 +252,7 @@ export class ExpenseService {
 
       })
 
+      return { message: 'Gasto eliminado correctamente.', status: HttpStatus.OK }
 
     } catch (error) {
       this.handleErrors(error)  

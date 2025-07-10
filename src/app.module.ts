@@ -9,6 +9,7 @@ import { AccountModule } from './account/account.module';
 import { IncomeModule } from './income/income.module';
 import { CategoryModule } from './category/category.module';
 import { ExpenseModule } from './expense/expense.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { ExpenseModule } from './expense/expense.module';
     AccountModule,
     IncomeModule,
     CategoryModule,
-    ExpenseModule
+    ExpenseModule,
+    DashboardModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

@@ -1,4 +1,4 @@
-import { IsDecimal, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
 import { TypeAccount } from "generated/prisma";
 
 export class CreateAccountDto {
@@ -10,8 +10,9 @@ export class CreateAccountDto {
   @IsEnum(TypeAccount)
   type?: TypeAccount
 
-  @IsDecimal({ decimal_digits: '2' })
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsNotEmpty()
+  @IsPositive()
   balance: number
 
 }

@@ -1,10 +1,10 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { UserService } from "./user.service"
-import { PrismaService } from "../prisma/prisma.service";
-import { User } from "generated/prisma";
-import { BadRequestException, InternalServerErrorException, Logger } from "@nestjs/common";
+import { Test, TestingModule } from '@nestjs/testing';
+import { UserService } from './user.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { User } from 'generated/prisma';
+import { InternalServerErrorException, Logger } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { CreateUserDto } from "./dto/create-user.dto";
+import { CreateUserDto } from './dto/create-user.dto';
 
 jest.mock('bcrypt')
 
@@ -12,56 +12,47 @@ jest.mock('bcrypt')
 const prismaMock = {
   user: {
     findUnique: jest.fn(),
-    create: jest.fn()
-  }
-}
+    create: jest.fn(),
+  },
+};
 
 const loggerMock = {
   error: jest.fn(),
 };
 
 describe('UserService', () => {
-
-
   let service: UserService;
   let prisma: typeof prismaMock;
-  let logger: typeof loggerMock;
-
 
   beforeEach(async () => {
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
         {
           provide: PrismaService,
-          useValue: prismaMock
+          useValue: prismaMock,
         },
         {
           provide: Logger,
-          useValue: loggerMock
+          useValue: loggerMock,
         }
       ]
-    }).compile()
+    }).compile();
 
     service = module.get<UserService>(UserService)
     prisma = module.get(PrismaService)
-    logger = module.get(Logger)
 
     jest.clearAllMocks()
 
   })
 
   it('should to be defined', () => {
-    expect(service).toBeDefined()
+    expect(service).toBeDefined();
   })
 
   describe('findById', () => {
-
     it('should return a user if found it', async () => {
-
       const mockUser: User = {
-
         id: '304923094093',
         email: 'example@example.com',
         name: 'Example',
@@ -69,23 +60,21 @@ describe('UserService', () => {
         username: 'example',
         password: 'alan1234',
         createdAt: new Date(),
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      };
 
-      prisma.user.findUnique.mockResolvedValue(mockUser)
-      
-      const result = await service.findById('304923094093')
+      prisma.user.findUnique.mockResolvedValue(mockUser);
+
+      const result = await service.findById('304923094093');
 
       expect(result).toEqual(mockUser)
       expect(prisma.user.findUnique).toHaveBeenCalledWith({
         where: { id: '304923094093' },
       });
       expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
-
-    })
+    });
 
     it('should return null if the user no exists', async () => {
-
       const userId = 'no-existent-id';
 
       prisma.user.findUnique.mockResolvedValue(null)
@@ -93,8 +82,9 @@ describe('UserService', () => {
       const result = await service.findById(userId)
 
       expect(result).toBeNull()
-      expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { id: userId } })
-
+      expect(prisma.user.findUnique).toHaveBeenCalledWith({
+        where: { id: userId },
+      });
     })
 
     it('should call handleErrors and launch a exception if Prisma fail', async () => {
@@ -102,7 +92,9 @@ describe('UserService', () => {
       const userId = 'error-id';
       const mockError = new Error('Error de conexión a la base de datos')
 
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {})
+      const loggerSpy = jest
+        .spyOn((service as any).logger, 'error')
+        .mockImplementation(() => {});
 
       prisma.user.findUnique.mockRejectedValue(mockError)
 

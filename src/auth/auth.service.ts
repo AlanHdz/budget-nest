@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UserToken } from './interfaces/user-token.interface';
@@ -24,14 +24,12 @@ export class AuthService {
     try {
       
       const usernameExists = await this.userService.findByUsername(createUserDto.username)
-
-      console.log(usernameExists);
       
       if (usernameExists) {
         throw new BadRequestException('Username already exists');
       }
       
-      const emailExists = await this.userService.findByUsername(createUserDto.email);
+      const emailExists = await this.userService.findByEmail(createUserDto.email);
 
       if (emailExists) {
         throw new BadRequestException('Email already exists');
@@ -96,7 +94,7 @@ export class AuthService {
   private handleErrors(error: any) : never {
 
     if (error.response) {
-      throw new InternalServerErrorException(error.response)
+      throw error
     }
 
     this.logger.error(error);

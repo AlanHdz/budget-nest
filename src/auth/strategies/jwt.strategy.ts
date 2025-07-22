@@ -4,7 +4,7 @@ import { Strategy, ExtractJwt } from "passport-jwt";
 import { Request as RequestType } from 'express';
 import { ConfigService } from "@nestjs/config";
 import { JwtPayload } from "../interfaces/jwt-payload.interface";
-import { UserService } from "src/user/user.service";
+import { UserService } from "../../user/user.service";
 
 
 

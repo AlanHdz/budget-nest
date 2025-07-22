@@ -85,7 +85,7 @@ export class UserService {
 
 
     if (error.response) {
-      throw new InternalServerErrorException(error.response)
+      throw error;
     }
 
     this.logger.error(error);

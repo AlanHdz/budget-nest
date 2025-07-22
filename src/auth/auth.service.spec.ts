@@ -1,0 +1,130 @@
+import { JwtService } from "@nestjs/jwt";
+import { UserService } from "../user/user.service";
+import { AuthService } from "./auth.service";
+import { Test, TestingModule } from "@nestjs/testing";
+import { JwtStrategy } from "../auth/strategies/jwt.strategy";
+import { PrismaService } from "../prisma/prisma.service";
+import { LoginUserDto } from "../auth/dto/login-user.dto";
+import { User } from "generated/prisma";
+
+import * as bcrypt from 'bcrypt';
+import { NotFoundException } from "@nestjs/common";
+jest.mock('bcrypt');
+
+const prismaMock = {
+  user: {
+    findUnique: jest.fn(),
+    create: jest.fn(),
+  },
+};
+
+const userServiceMock = {
+  findByUsername: jest.fn(),
+  findByEmail: jest.fn(),
+  create: jest.fn()
+}
+const jwtServiceMock = {
+  signAsync: jest.fn()
+};
+
+const jwtStrategyMock = {
+  validate: jest.fn()
+}
+
+
+describe('AuthService', () => {
+
+  let service: AuthService;
+  let userService: jest.Mocked<UserService>;
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        {
+          provide: UserService,
+          useValue: userServiceMock
+        },
+        {
+          provide: JwtService,
+          useValue: jwtServiceMock
+        },
+        {
+          provide: JwtStrategy,
+          useValue: jwtStrategyMock
+        },
+        {
+          provide: PrismaService,
+          useValue: prismaMock
+        }
+      ]
+    }).compile();
+
+    service = module.get<AuthService>(AuthService)
+    userService = module.get<UserService>(UserService) as jest.Mocked<UserService>
+
+    jest.clearAllMocks()
+  })
+
+  it('should to be defined', () => {
+    expect(service).toBeDefined();
+  })
+
+
+  describe('login', () => {
+
+    const loginUserDto: LoginUserDto = {
+      email: 'test@example.com',
+      password: 'password123'
+    }
+
+    const mockUser: User = {
+      id: 'user-id-1',
+      name: 'Test User',
+      lastName: 'Test',
+      username: 'test',
+      email: 'test@example.com',
+      password: 'hashedPassword',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+
+    it('should return a user and token with valid credentials', async () => {
+
+      const mockToken = 'mock-jwt-token';
+      userService.findByEmail.mockResolvedValue(mockUser)
+      const bcryptSpy = jest.spyOn(bcrypt, 'compareSync').mockReturnValue(true);
+      const getTokensSpy = jest.spyOn(service, 'getTokens').mockResolvedValue(mockToken);
+
+      const result = await service.login(loginUserDto);
+
+      expect(userServiceMock.findByEmail).toHaveBeenCalledWith(loginUserDto.email);
+      expect(bcryptSpy).toHaveBeenCalledWith(loginUserDto.password, mockUser.password);
+      expect(getTokensSpy).toHaveBeenCalledWith(mockUser.id);
+      expect(result.token).toEqual(mockToken);
+      expect(result.email).toEqual(loginUserDto.email);
+
+    })
+
+    it('should launch NotFoundException if the user not exists', async () => {
+
+      userService.findByEmail.mockResolvedValue(null)
+
+      await expect(service.login(loginUserDto)).rejects.toThrow(NotFoundException)
+      expect(bcrypt.compareSync).not.toHaveBeenCalled()
+    })
+
+    it('should launch BadRequestException if the passwod is not valid', async () => {
+
+      userService.findByEmail.mockResolvedValue(mockUser);
+      const bcryptSpy = jest.spyOn(bcrypt, 'compareSync').mockReturnValue(false);
+
+      await expect(service.login(loginUserDto)).rejects.toThrow('Credentials are not valid');
+      expect(jest.spyOn(service, 'getTokens')).not.toHaveBeenCalled();
+
+    })
+
+  })
+
+
+})

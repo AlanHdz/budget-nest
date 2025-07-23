@@ -8,7 +8,8 @@ import { LoginUserDto } from "../auth/dto/login-user.dto";
 import { User } from "generated/prisma";
 
 import * as bcrypt from 'bcrypt';
-import { NotFoundException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { CreateUserDto } from "src/user/dto/create-user.dto";
 jest.mock('bcrypt');
 
 const prismaMock = {
@@ -114,7 +115,7 @@ describe('AuthService', () => {
       expect(bcrypt.compareSync).not.toHaveBeenCalled()
     })
 
-    it('should launch BadRequestException if the passwod is not valid', async () => {
+    it('should launch BadRequestException if the password is not valid', async () => {
 
       userService.findByEmail.mockResolvedValue(mockUser);
       const bcryptSpy = jest.spyOn(bcrypt, 'compareSync').mockReturnValue(false);
@@ -126,5 +127,65 @@ describe('AuthService', () => {
 
   })
 
+
+  describe('signup', () => {
+
+    const createUserDto: CreateUserDto = {
+      name: 'newTest',
+      lastName: 'user',
+      username: 'testuser1',
+      email: 'test@test.com',
+      password: 'hashedPassword'
+    }
+
+    const mockUser: User = {
+      id: 'user-id-1',
+      name: 'newTest',
+      lastName: 'user',
+      username: 'testuser1',
+      email: 'test@test.com',
+      password: 'hashedPassword',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+
+    it('should create a user and return user with token', async () => {
+      
+      const mockToken = 'mock-jwt-token';
+      userService.findByUsername.mockResolvedValue(null)
+      userService.findByEmail.mockResolvedValue(null)
+      userService.create.mockResolvedValue(mockUser)
+      const getTokensSpy = jest.spyOn(service, 'getTokens').mockResolvedValue(mockToken);
+
+      const result = await service.signUp(createUserDto)
+
+      expect(userServiceMock.findByUsername).toHaveBeenCalledWith(createUserDto.username);
+      expect(userServiceMock.findByEmail).toHaveBeenCalledWith(createUserDto.email)
+      expect(getTokensSpy).toHaveBeenCalledWith(mockUser.id);
+      expect(result.token).toEqual(mockToken);
+      expect(result.email).toEqual(createUserDto.email);
+
+    })
+
+    it('should launch BadRequestException if the username exists', async () => {
+
+      userService.findByUsername.mockResolvedValue(mockUser)
+
+      await expect(service.signUp(createUserDto)).rejects.toThrow(BadRequestException);
+      expect(jest.spyOn(service, 'getTokens')).not.toHaveBeenCalled();
+
+    })
+
+    it('should launch BadRequestException if the email exists', async () => {
+
+      userService.findByEmail.mockResolvedValue(mockUser)
+
+      await expect(service.signUp(createUserDto)).rejects.toThrow(BadRequestException);
+      expect(jest.spyOn(service, 'getTokens')).not.toHaveBeenCalled();
+
+    })
+
+
+  })
 
 })

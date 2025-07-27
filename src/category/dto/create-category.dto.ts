@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { Type } from "generated/prisma";
+import { Type } from "../../../generated/prisma";
 
 export class CreateCategoryDto {
 

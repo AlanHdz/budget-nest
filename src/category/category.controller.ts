@@ -2,8 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { JwtGuard } from 'src/auth/guards/auth.guard';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { JwtGuard } from '../../src/auth/guards/auth.guard';
+import { GetUser } from '../../src/auth/decorators/get-user.decorator';
 
 @Controller('categories')
 export class CategoryController {

@@ -1,9 +1,9 @@
 import { BadRequestException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { Category, User } from 'generated/prisma';
-import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
+import { PrismaClientKnownRequestError } from '../../generated/prisma/runtime/library';
 
 @Injectable()
 export class CategoryService {
@@ -64,7 +64,7 @@ export class CategoryService {
         }
       })
 
-       if (!category) {
+      if (!category) {
         throw new NotFoundException('Category not found')
       }
 
@@ -122,9 +122,9 @@ export class CategoryService {
   }
 
   private handleErrors(error: any) : never {
-    
-    if (error.response) {
-      throw new InternalServerErrorException(error.response)
+
+    if (error.hasOwnProperty('response')) {
+      throw error;
     }
     
     this.logger.error(error);
@@ -137,7 +137,7 @@ export class CategoryService {
       error instanceof PrismaClientKnownRequestError &&
       error.code === 'P2025'
     ) {
-      throw new NotFoundException('The account does not exist or does not belong to you');
+      throw new NotFoundException('The category does not exist or does not belong to you');
     }
 
     throw new InternalServerErrorException(error)

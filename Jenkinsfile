@@ -49,9 +49,9 @@ pipeline {
             steps {
                 echo '--- Deploying to DigitalOcean Droplet ---'
                 sshagent(credentials: [DIGITALOCEAN_SSH_KEY_ID]) {
-                    // Reemplaza 'root@TU_IP_DEL_DROPLET'
+                    
                     sh """
-                        ssh -o StrictHostKeyChecking=no root@TU_IP_DEL_DROPLET '
+                        ssh -o StrictHostKeyChecking=no root@157.245.91.152 '
                             echo "--- Conectado al Droplet ---" &&
                             cd ~/app &&
                             echo "--- Actualizando la nueva imagen desde Docker Hub ---" &&

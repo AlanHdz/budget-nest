@@ -13,7 +13,6 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Clona el código de la rama que disparó el webhook
                 checkout scm
             }
         }
@@ -21,8 +20,6 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 echo '--- Running NestJS Tests ---'
-                // Construye una imagen Docker hasta la etapa 'test' y la ejecuta
-                // Si los tests fallan, el comando fallará y detendrá el pipeline aquí
                 sh "docker build --target test -t ${DOCKER_IMAGE_PROD}-test ."
             }
         }
@@ -62,10 +59,11 @@ pipeline {
     }
     post {
         always {
-            // Limpieza de imágenes sin usar para mantener el sistema limpio
-            sh 'docker image prune -f'
-            // Elimina la imagen de test que creamos
             sh "docker rmi ${DOCKER_IMAGE_PROD}-test || true"
+            docker.image('docker:latest').inside {
+                echo '--- Cleaning up unused Docker images ---'
+                sh 'docker image prune -f'
+            }
         }
     }
 }

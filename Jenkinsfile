@@ -1,13 +1,14 @@
 pipeline {
-    agent any
-
-    tools {
-        nodejs 'NodeJS-24'
+    agent {
+        docker {
+            image 'docker:latest'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
     }
 
     environment {
-        DOCKER_IMAGE_PROD = 'mi-app-nestjs-prod'
-        DOCKER_CONTAINER_PROD = 'nestjs_app_prod'
+        DOCKER_IMAGE_PROD = 'budget-nest-budget-app'
+        DOCKER_CONTAINER_PROD = 'budget_app_prod'
     }
 
     stages {
@@ -59,14 +60,9 @@ pipeline {
     }
     post {
         always {
-            script {
-                sh "docker rmi ${DOCKER_IMAGE_PROD}-test || true"
-
-                docker.image('docker:latest').inside {
-                    echo '--- Cleaning up unused Docker images ---'
-                    sh 'docker image prune -f'
-                }
-            }
+            echo '--- Cleaning up ---'
+            sh "docker rmi ${DOCKER_IMAGE_PROD}-test || true"
+            sh 'docker image prune -f'
         }
     }
 }

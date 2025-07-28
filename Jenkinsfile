@@ -45,7 +45,7 @@ pipeline {
         }
 
         stage('Deploy to DigitalOcean') {
-            when { branch 'main' }
+            when { branch 'master' }
             steps {
                 echo '--- Deploying to DigitalOcean Droplet ---'
                 sshagent(credentials: [DIGITALOCEAN_SSH_KEY_ID]) {

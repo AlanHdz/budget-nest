@@ -25,7 +25,6 @@ pipeline {
 
         //CD
         stage('Deploy to Production') {
-            // Este 'stage' solo se ejecuta si la rama es 'main'
             when {
                 branch 'master'
             }

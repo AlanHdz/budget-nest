@@ -1,6 +1,10 @@
 FROM jenkins/jenkins:lts-jdk17
 
+ARG DOCKER_GID
+
 USER root
+
+RUN groupadd -g ${DOCKER_GID:-1000} docker && usermod -aG docker jenkins
 
 RUN apt-get update && apt-get install -y lsb-release
 RUN curl -fsSLo /usr/share/keyrings/docker-archive-keyring.asc \

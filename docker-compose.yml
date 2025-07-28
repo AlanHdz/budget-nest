@@ -54,6 +54,8 @@ services:
     container_name: jenkins
     build: 
       context: ./jenkins
+      args:
+        DOCKER_GID: 1001 
     ports:
       - 8080:8080
     volumes:

@@ -2,7 +2,7 @@
 # ---- BASE ----
 FROM node:24.4.1-alpine AS base
 WORKDIR /usr/src/app
-COPY package*.json ./dest
+COPY package*.json ./
 
 # --- Dependencies ----
 # Instalar todas las dependencias para poder correr tests

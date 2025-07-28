@@ -23,6 +23,12 @@ pipeline {
             }
         }
 
+        stage('Debug Branch Name') {
+            steps {
+                echo "El nombre de la rama que Jenkins detecta es: ${env.BRANCH_NAME}"
+            }
+        }
+
         //CD
         stage('Deploy to Production') {
             when {

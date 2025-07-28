@@ -7,17 +7,18 @@ COPY package*.json ./
 # --- Dependencies ----
 # Instalar todas las dependencias para poder correr tests
 FROM base as dependencies
-RUN npm install
-RUN npx prisma generate
+RUN npm install --only=production
 COPY . .
+RUN npm install
 
 # --- Tests ---
 FROM dependencies AS test
-COPY . .
+RUN npx prisma generate
 RUN npm run test
 
 # ---- Build ---
 FROM dependencies AS build
+RUN npx prisma generate
 RUN npm run build
 
 # --- Production ---
@@ -29,4 +30,4 @@ COPY --from=build /usr/src/app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /usr/src/app/prisma ./prisma
 
 EXPOSE 3000
-CMD [ "sh", "-c", "npx prisma migrate dev && node dist/main.js" ]
+CMD [ "sh", "-c", "npx prisma migrate deploy && node dist/main.js" ]

@@ -52,7 +52,8 @@ services:
   
   jenkins:
     container_name: jenkins
-    image: jenkins/jenkins:lts-jdk17
+    build: 
+      context: ./jenkins
     ports:
       - 8080:8080
     volumes:

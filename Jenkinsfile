@@ -23,7 +23,7 @@ pipeline {
         stage('Deploy to Production') {
             // Este 'stage' solo se ejecuta si la rama es 'main'
             when {
-                branch 'main'
+                branch 'master'
             }
             steps {
                 script {

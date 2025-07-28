@@ -2,8 +2,11 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE_PROD = 'budget-nest-budget-app'
+
+        DOCKER_IMAGE_PROD = 'alanhedz97/budget-nest-app'
         DOCKER_CONTAINER_PROD = 'budget_app_prod'
+        DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'
+        DIGITALOCEAN_SSH_KEY_ID = 'digitalocean-ssh-key'
     }
 
     stages {
@@ -20,6 +23,7 @@ pipeline {
             }
         }
 
+        //CD
         stage('Deploy to Production') {
             // Este 'stage' solo se ejecuta si la rama es 'main'
             when {
@@ -27,24 +31,37 @@ pipeline {
             }
             steps {
                 script {
-                    echo '--- Deploying to Production ---'
+                    echo '--- Building and Pushing Production Image ---'
                     
                     sh "docker build -t ${DOCKER_IMAGE_PROD}:latest ."
+                    sh "docker build -t ${DOCKER_IMAGE_PROD}:${env.BUILD_ID} ."
+                    withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
+                    }
+                    sh "docker push ${DOCKER_IMAGE_PROD}:latest"
+                    sh "docker push ${DOCKER_IMAGE_PROD}:${env.BUILD_ID}"
+                }
+            }
+        }
 
-
-                     sh """
-                        if [ \$(docker ps -a -q -f name=${DOCKER_CONTAINER_PROD}) ]; then
-                            docker stop ${DOCKER_CONTAINER_PROD}
-                            docker rm ${DOCKER_CONTAINER_PROD}
-                        fi
-                    """
-
+        stage('Deploy to DigitalOcean') {
+            when { branch 'main' }
+            steps {
+                echo '--- Deploying to DigitalOcean Droplet ---'
+                sshagent(credentials: [DIGITALOCEAN_SSH_KEY_ID]) {
+                    // Reemplaza 'root@TU_IP_DEL_DROPLET'
                     sh """
-                    docker run -d --name ${DOCKER_CONTAINER_PROD} \
-                        --network=budget-pipeline_app-network \
-                        -p 3000:3000 \
-                        -e DATABASE_URL='postgresql://user:password@db:5432/mydatabase?schema=public' \
-                        ${DOCKER_IMAGE_PROD}:latest
+                        ssh -o StrictHostKeyChecking=no root@TU_IP_DEL_DROPLET '
+                            echo "--- Conectado al Droplet ---" &&
+                            cd ~/app &&
+                            echo "--- Actualizando la nueva imagen desde Docker Hub ---" &&
+                            docker-compose pull &&
+                            echo "--- Reiniciando el contenedor de la aplicación ---" &&
+                            docker-compose up -d --no-deps nestjs-app-prod &&
+                            echo "--- Limpiando imágenes antiguas ---" &&
+                            docker image prune -f &&
+                            echo "--- Despliegue completado ---"
+                        '
                     """
                 }
             }
@@ -54,7 +71,7 @@ pipeline {
         always {
             echo '--- Cleaning up ---'
             sh "docker rmi ${DOCKER_IMAGE_PROD}-test || true"
-            sh 'docker image prune -f'
+            sh "docker logout"
         }
     }
 }

@@ -50,7 +50,7 @@ Sigue estos pasos para tener una copia del proyecto corriendo localmente.
 
 1.  **Clona el repositorio**
     ```sh
-    git clone [https://github.com/AlanHdz/budget-nest.git](https://github.com/AlanHdz/budget-nest.git)
+    git clone https://github.com/AlanHdz/budget-nest.git
     cd budget-nest
     ```
 

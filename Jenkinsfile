@@ -59,10 +59,13 @@ pipeline {
     }
     post {
         always {
-            sh "docker rmi ${DOCKER_IMAGE_PROD}-test || true"
-            docker.image('docker:latest').inside {
-                echo '--- Cleaning up unused Docker images ---'
-                sh 'docker image prune -f'
+            script {
+                sh "docker rmi ${DOCKER_IMAGE_PROD}-test || true"
+
+                docker.image('docker:latest').inside {
+                    echo '--- Cleaning up unused Docker images ---'
+                    sh 'docker image prune -f'
+                }
             }
         }
     }

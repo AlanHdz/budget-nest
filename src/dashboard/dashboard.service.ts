@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
-import { Prisma, User } from 'generated/prisma';
-import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma, User } from '../../generated/prisma';
+import { PrismaClientKnownRequestError } from '../../generated/prisma/runtime/library';
 import { ExpensesByCategoryMonthDto } from './dto/expenses-by-category-month.dto';
 import { IncomesByCategoryMonthDto } from './dto/incomes-by-category-month.dto';
 import { MovementDto } from './dto/movement.dto';
 import { LimitLatestMovementsDto } from './dto/limit-latest-movements.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class DashboardService {

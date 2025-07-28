@@ -2,9 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { ExpenseService } from './expense.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
-import { JwtGuard } from 'src/auth/guards/auth.guard';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
-import { User } from 'generated/prisma';
+import { User } from '../../generated/prisma';
+import { JwtGuard } from '../auth/guards/auth.guard';
+import { GetUser } from '../auth/decorators/get-user.decorator';
 
 @Controller('expenses')
 export class ExpenseController {

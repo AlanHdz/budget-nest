@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { IncomeService } from './income.service';
 import { CreateIncomeDto } from './dto/create-income.dto';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { UpdateIncomeDto } from './dto/update-income.dto';
-import { JwtGuard } from 'src/auth/guards/auth.guard';
+import { JwtGuard } from '../auth/guards/auth.guard';
+import { GetUser } from '../auth/decorators/get-user.decorator';
 
 @Controller('incomes')
 export class IncomeController {

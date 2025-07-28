@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
-import { JwtGuard } from 'src/auth/guards/auth.guard';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
-import { User } from 'generated/prisma';
+import { User } from '../../generated/prisma';
 import { ExpensesByCategoryMonthDto } from './dto/expenses-by-category-month.dto';
 import { IncomesByCategoryMonthDto } from './dto/incomes-by-category-month.dto';
 import { LimitLatestMovementsDto } from './dto/limit-latest-movements.dto';
+import { JwtGuard } from '../auth/guards/auth.guard';
+import { GetUser } from '../auth/decorators/get-user.decorator';
 
 @Controller('dashboard')
 export class DashboardController {

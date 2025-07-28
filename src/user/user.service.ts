@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, Logger, 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
-import { User } from 'generated/prisma';
+import { User } from '../../generated/prisma';
 
 @Injectable()
 export class UserService {

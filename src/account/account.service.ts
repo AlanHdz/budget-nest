@@ -1,7 +1,7 @@
 import { BadRequestException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
-import { Account, User } from 'generated/prisma';
+import { Account, User } from '../../generated/prisma';
 import { PrismaService } from '../prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '../../generated/prisma/runtime/library';
 

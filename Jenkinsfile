@@ -10,9 +10,22 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        
+        stage('Checkout & Define Branch') {
             steps {
+
                 checkout scm
+
+
+                script {
+                    
+                    def currentBranch = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
+                    
+                    
+                    echo "La rama detectada por Git es: ${currentBranch}"
+                    
+                    env.CURRENT_BRANCH = currentBranch
+                }
             }
         }
 
@@ -32,7 +45,7 @@ pipeline {
         //CD
         stage('Deploy to Production') {
             when {
-                branch 'master'
+                expression { env.CURRENT_BRANCH == 'master' }
             }
             steps {
                 script {
@@ -50,7 +63,9 @@ pipeline {
         }
 
         stage('Deploy to DigitalOcean') {
-            when { branch 'master' }
+            when {
+                expression { env.CURRENT_BRANCH == 'master' }
+            }
             steps {
                 echo '--- Deploying to DigitalOcean Droplet ---'
                 sshagent(credentials: [DIGITALOCEAN_SSH_KEY_ID]) {

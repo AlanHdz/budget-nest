@@ -50,8 +50,8 @@ Sigue estos pasos para tener una copia del proyecto corriendo localmente.
 
 1.  **Clona el repositorio**
     ```sh
-    git clone [https://github.com/tu-usuario/tu-repositorio.git](https://github.com/tu-usuario/tu-repositorio.git)
-    cd tu-repositorio
+    git clone [https://github.com/AlanHdz/budget-nest.git](https://github.com/AlanHdz/budget-nest.git)
+    cd budget-nest
     ```
 
 2.  **Instala las dependencias**

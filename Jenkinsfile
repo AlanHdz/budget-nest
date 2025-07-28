@@ -38,7 +38,7 @@ pipeline {
 
         stage('Debug Branch Name') {
             steps {
-                echo "El nombre de la rama que Jenkins detecta es: ${env.BRANCH_NAME}"
+                echo "El nombre de la rama que Jenkins detecta es: ${env.CURRENT_BRANCH}"
             }
         }
 

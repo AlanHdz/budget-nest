@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
-import { TypeAccount } from "generated/prisma";
+import { TypeAccount } from "../../../generated/prisma";
 
 export class CreateAccountDto {
 

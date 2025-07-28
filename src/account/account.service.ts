@@ -2,8 +2,8 @@ import { BadRequestException, HttpStatus, Injectable, InternalServerErrorExcepti
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { Account, User } from 'generated/prisma';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
+import { PrismaService } from '../prisma/prisma.service';
+import { PrismaClientKnownRequestError } from '../../generated/prisma/runtime/library';
 
 @Injectable()
 export class AccountService {

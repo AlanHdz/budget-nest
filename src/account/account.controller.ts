@@ -2,8 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@n
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
-import { JwtGuard } from 'src/auth/guards/auth.guard';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
+
+import { JwtGuard } from '../auth/guards/auth.guard';
+import { GetUser } from '../auth/decorators/get-user.decorator';
 
 @Controller('accounts')
 export class AccountController {

@@ -8,6 +8,7 @@ COPY package*.json ./
 # Instalar todas las dependencias para poder correr tests
 FROM base as dependencies
 RUN npm install
+RUN npx prisma generate
 COPY . .
 
 # --- Tests ---
@@ -18,7 +19,6 @@ RUN npm run test
 # ---- Build ---
 FROM dependencies AS build
 RUN npm run build
-RUN npx prisma generate
 
 # --- Production ---
 FROM base as production

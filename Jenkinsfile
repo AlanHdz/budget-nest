@@ -19,10 +19,11 @@ pipeline {
 
                 script {
                     
-                    def currentBranch = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
+                    echo "La variable GIT_BRANCH sin procesar es: ${env.GIT_BRANCH}"
+
+                    def currentBranch = env.GIT_BRANCH.replace('origin/', '')
                     
-                    
-                    echo "La rama detectada por Git es: ${currentBranch}"
+                    echo "La rama detectada y limpiada es: ${currentBranch}"
                     
                     env.CURRENT_BRANCH = currentBranch
                 }

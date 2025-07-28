@@ -6,7 +6,7 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
-      target: production
+      target: development
     ports:
       - "3000:3000"
     depends_on:
@@ -18,6 +18,9 @@ services:
       - SWAGGER_PASSWORD=${SWAGGER_PASSWORD}
     networks:
       - budget-network
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
   
   db:
     container_name: postgres_db

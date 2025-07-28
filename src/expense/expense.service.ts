@@ -1,9 +1,9 @@
 import { BadRequestException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
-import { Expense, User } from 'generated/prisma';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { PrismaClientKnownRequestError } from 'generated/prisma/runtime/library';
+import { Expense, User } from '../../generated/prisma';
+import { PrismaClientKnownRequestError } from '../../generated/prisma/runtime/library';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ExpenseService {

@@ -78,7 +78,7 @@ pipeline {
                             echo "--- Actualizando la nueva imagen desde Docker Hub ---" &&
                             docker-compose pull &&
                             echo "--- Reiniciando el contenedor de la aplicación ---" &&
-                            docker-compose up -d --no-deps nestjs-app-prod &&
+                            docker-compose up -d --no-deps budget-nest-app &&
                             echo "--- Limpiando imágenes antiguas ---" &&
                             docker image prune -f &&
                             echo "--- Despliegue completado ---"

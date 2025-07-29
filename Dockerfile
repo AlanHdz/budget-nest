@@ -6,7 +6,7 @@ COPY package*.json ./
 
 
 # --- Development ---
-FROM base as development
+FROM base AS development
 RUN npm install
 EXPOSE 3000
 CMD [ "npm", "run", "dev" ]
@@ -18,9 +18,9 @@ RUN npm install
 COPY . .
 
 # --- Tests -----
-FROM builder_base as test
+FROM builder_base AS test
 RUN npx prisma generate
-CMD [ "npm", "run", "test" ]
+RUN npm run test
 
 # --- Etapa BUILD ---
 FROM builder_base AS build

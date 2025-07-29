@@ -33,7 +33,7 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 echo '--- Running NestJS Tests ---'
-                sh "docker build --target test -t ${DOCKER_IMAGE_PROD}-test ."
+                sh "docker build --no-cache --target test -t ${DOCKER_IMAGE_PROD}-test ."
             }
         }
 

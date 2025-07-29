@@ -75,6 +75,7 @@ pipeline {
                         ssh -o StrictHostKeyChecking=no root@157.245.91.152 '
                             echo "--- Conectado al Droplet ---" &&
                             cd ~/app &&
+                            docker-compose stop budget-nest-app &&
                             echo "--- Actualizando la nueva imagen desde Docker Hub ---" &&
                             docker-compose pull &&
                             echo "--- Reiniciando el contenedor de la aplicación ---" &&

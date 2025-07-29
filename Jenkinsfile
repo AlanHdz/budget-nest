@@ -72,7 +72,7 @@ pipeline {
                 sshagent(credentials: [DIGITALOCEAN_SSH_KEY_ID]) {
                     
                     sh """
-                        ssh -o StrictHostKeyChecking=no root@157.245.91.152 '
+                        ssh -o StrictHostKeyChecking=no root@157.245.91.152'
                             echo "--- Conectado al Droplet ---" &&
                             cd ~/app &&
                             echo "--- Actualizando la nueva imagen desde Docker Hub ---" &&

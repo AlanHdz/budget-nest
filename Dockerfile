@@ -9,7 +9,7 @@ COPY package*.json ./
 FROM base AS development
 RUN npm install
 EXPOSE 3000
-CMD [ "npm", "run", "dev" ]
+CMD [ "npm", "run", "start:dev" ]
 
 # --- Etapa BUILDER_BASE ----
 # Instalar todas las dependencias para poder correr tests

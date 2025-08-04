@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../generated/prisma"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -42,13 +42,14 @@ model Account {
   incomes  Income[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Category {
   id     String @id @default(uuid()) @db.Uuid
   name   String
   emoji  String
+  color  String @default("#FFFFFF")
   type   Type   @default(INCOME)
   user   User   @relation(fields: [userId], references: [id])
   userId String @db.Uuid
@@ -57,7 +58,7 @@ model Category {
   incomes  Income[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Expense {
@@ -76,7 +77,7 @@ model Expense {
   categoryId String   @db.Uuid
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Income {
@@ -95,7 +96,7 @@ model Income {
   categoryId String   @db.Uuid
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 enum Type {

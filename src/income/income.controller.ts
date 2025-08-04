@@ -63,4 +63,15 @@ export class IncomeController {
   remove(@Param('id') id: string, @GetUser() user) {
     return this.incomeService.remove(id, user);
   }
+
+  @Get('/latest-movements')
+  @UseGuards(JwtGuard)
+  @ApiOperation({ summary: 'Get Latest Movements by user' })
+  @ApiResponse({ status: 200, description: 'Get Latest Movements by user successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Not found income' })
+  @ApiResponse({ status: 500, description: 'Error in the server' })
+  getLatestMovements(@Param('id') id: string, @GetUser() user) {
+    return this.incomeService.remove(id, user);
+  }
 }

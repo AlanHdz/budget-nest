@@ -235,12 +235,13 @@ export class DashboardService {
         select: {
           id: true,
           name: true,
-          emoji: true
+          emoji: true,
+          color: true
         }
       })
 
       const categoryDetailsMap = new Map(
-        categories.map(category => [category.id, { name: category.name, emoji: category.emoji }])
+        categories.map(category => [category.id, { name: category.name, emoji: category.emoji, color: category.color }])
       )
 
       const result = expensesByCategory.map(expense => {
@@ -254,6 +255,7 @@ export class DashboardService {
           name: categoryDetails?.name || 'Sin categoria',
           emoji: categoryDetails?.emoji || '❓',
           total: categoryTotal,
+          color: categoryDetails?.color,
           percentage: parseFloat(percentage.toFixed(2))
         }
       })

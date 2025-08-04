@@ -7,22 +7,15 @@ export class CreateUserDto
     @ApiProperty({
         description: 'The name of the user'
     })
-    @IsString()
-    @IsNotEmpty()
+    @IsString({ message: 'El nombre debe ser una cadena de texto.' })
+    @IsNotEmpty({ message: 'La contraseña no puede estar vacia.' })
     name: string;
-
-    @ApiProperty({
-        description: 'The last name of the user',
-    })
-    @IsString()
-    @IsNotEmpty()
-    lastName: string;
 
     @ApiProperty({
         description: 'The username of the user',
     })
-    @IsAlphanumeric()
-    @IsNotEmpty()
+    @IsAlphanumeric(undefined, { message: 'El nombre de usuario solo puede contener caracteres alfanumericos.' })
+    @IsNotEmpty({ message: 'La contraseña no puede estar vacia.' })
     username: string;
 
     @ApiProperty({
@@ -30,16 +23,16 @@ export class CreateUserDto
         example: 'example@example.com'
     })
     @IsEmail()
-    @IsString()
-    @IsNotEmpty()
+    @IsString({ message: 'El email debe ser una cadena de texto.' })
+    @IsNotEmpty({ message: 'La contraseña no puede estar vacia.' })
     email: string;
 
     @ApiProperty({
         description: 'The password of the user',
     })
-    @IsString()
-    @IsStrongPassword()
-    @IsNotEmpty()
+    @IsString({ message: 'La contraseña debe ser una cadena de texto.' })
+    @IsStrongPassword({}, { message: 'La contraseña no es segura.'})
+    @IsNotEmpty({ message: 'La contraseña no puede estar vacia.' })
     password: string
 
 }

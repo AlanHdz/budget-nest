@@ -61,11 +61,11 @@ export class AuthService {
       const user = await this.userService.findByEmail(email)
 
       if (!user) {
-        throw new NotFoundException(`User not found`);
+        throw new NotFoundException(`No se encontro el usuario con el email ${email}`);
       }
 
       if (!bcrypt.compareSync(password, user.password)) {
-        throw new BadRequestException('Credentials are not valid')
+        throw new BadRequestException('Las credenciales no son validas')
       }
 
       const token = await this.getTokens(user.id)

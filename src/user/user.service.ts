@@ -17,14 +17,13 @@ export class UserService {
 
     try {
 
-      const { email, name, lastName, username, password } = createUserDto;
+      const { email, name, username, password } = createUserDto;
 
 
       const newUser = await this.prisma.user.create({
         data: {
           name: name,
           email: email,
-          lastName: lastName,
           username: username,
           password: bcrypt.hashSync(password, 10)
         }

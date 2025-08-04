@@ -24,14 +24,14 @@ services:
   
   db:
     container_name: postgres_db
-    image: postgres:15
+    image: postgres:17
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD} 
       - POSTGRES_DB=${POSTGRES_DB}
     ports:
       - 5432:5432
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data17:/var/lib/postgresql/data
     networks:
       - budget-network
     
@@ -41,5 +41,5 @@ networks:
 
 
 volumes:
-  postgres_data:
+  postgres_data17:
   jenkins_home:

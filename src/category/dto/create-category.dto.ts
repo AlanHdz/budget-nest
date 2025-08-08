@@ -27,4 +27,11 @@ export class CreateCategoryDto {
   @IsNotEmpty()
   @IsString()
   emoji: string;
+
+  @ApiProperty({
+    description: 'Color of the category',
+  })
+  @IsNotEmpty()
+  @IsString()
+  color: string;
 }

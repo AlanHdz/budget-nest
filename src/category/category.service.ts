@@ -17,13 +17,14 @@ export class CategoryService {
   async create(createCategoryDto: CreateCategoryDto, user: User) : Promise<Category> {
     try {
       
-      const { name, type, emoji } = createCategoryDto;
+      const { name, type, emoji, color } = createCategoryDto;
 
       const newCategory = await this.prisma.category.create({
         data: {
           name,
           type,
           emoji,
+          color,
           userId: user.id
         }
       })
@@ -80,13 +81,14 @@ export class CategoryService {
     
     try {
 
-      const { name, type, emoji } = updateCategoryDto
+      const { name, type, emoji, color } = updateCategoryDto
       
       const updatedCategory = await this.prisma.category.update({
         data: {
           name,
           type,
-          emoji
+          emoji,
+          color
         },
         where: {
           id,

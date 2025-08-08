@@ -213,23 +213,16 @@ export class IncomeService {
 
 
   async getLatestMovements(user: User) {
-
     try {
       const incomes = await this.prisma.income.findMany({
-        take: 10,
         where: { userId: user.id },
         include: {
-          account: {
+          category: { 
             select: {
               id: true,
               name: true,
-              type: true
-            }
-          },
-          category: {
-            select: {
-              id: true,
-              name: true
+              color: true,
+              emoji: true
             }
           }
         }

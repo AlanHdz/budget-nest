@@ -31,6 +31,17 @@ export class IncomeController {
     return this.incomeService.findAll(user);
   }
 
+  @Get('/latest-movements')
+  @UseGuards(JwtGuard)
+  @ApiOperation({ summary: 'Get Latest Movements by user' })
+  @ApiResponse({ status: 200, description: 'Get Latest Movements by user successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Not found income' })
+  @ApiResponse({ status: 500, description: 'Error in the server' })
+  getLatestMovements(@GetUser() user) {
+    return this.incomeService.getLatestMovements(user);
+  }
+
   @Get(':id')
   @UseGuards(JwtGuard)
   @ApiOperation({ summary: 'Get an income by user' })
@@ -61,17 +72,6 @@ export class IncomeController {
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   remove(@Param('id') id: string, @GetUser() user) {
-    return this.incomeService.remove(id, user);
-  }
-
-  @Get('/latest-movements')
-  @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Get Latest Movements by user' })
-  @ApiResponse({ status: 200, description: 'Get Latest Movements by user successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Not found income' })
-  @ApiResponse({ status: 500, description: 'Error in the server' })
-  getLatestMovements(@Param('id') id: string, @GetUser() user) {
     return this.incomeService.remove(id, user);
   }
 }

@@ -1,27 +1,6 @@
 
 
 services:
-  budget-app:
-    container_name: budget_app_prod
-    build: 
-      context: .
-      dockerfile: Dockerfile
-      target: development
-    ports:
-      - "3000:3000"
-    depends_on:
-      - db
-    environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - JWT_SECRET=${JWT_SECRET}
-      - SWAGGER_USER=${SWAGGER_USER}
-      - SWAGGER_PASSWORD=${SWAGGER_PASSWORD}
-    networks:
-      - budget-network
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-  
   db:
     container_name: postgres_db
     image: postgres:17
@@ -42,4 +21,3 @@ networks:
 
 volumes:
   postgres_data17:
-  jenkins_home:

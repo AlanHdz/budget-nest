@@ -6,6 +6,8 @@ import { IncomesByCategoryMonthDto } from './dto/incomes-by-category-month.dto';
 import { MovementDto } from './dto/movement.dto';
 import { LimitLatestMovementsDto } from './dto/limit-latest-movements.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { endOfMonth, startOfMonth, subMonths } from 'date-fns';
+import { GoalsService } from '../goals/goals.service';
 
 @Injectable()
 export class DashboardService {
@@ -13,10 +15,12 @@ export class DashboardService {
   private readonly logger = new Logger('DashboardService')
 
   constructor(
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    private readonly goalsService: GoalsService
   ) { }
 
   private MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
 
 
   async getTotalBalance(user: User): Promise<Object> {

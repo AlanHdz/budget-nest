@@ -44,4 +44,8 @@ export class CreateIncomeDto {
   @IsNotEmpty()
   categoryId: string;
 
+  @IsUUID()
+  @IsOptional()
+  recurringIncomeId? : string;
+
 }

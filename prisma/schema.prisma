@@ -28,6 +28,9 @@ model User {
   categories Category[]
   expenses   Expense[]
   incomes    Income[]
+
+  recurringIncomes RecurringIncome[]
+  goals            Goal[]
 }
 
 model Account {
@@ -43,6 +46,8 @@ model Account {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+
+  recurringIncomes RecurringIncome[]
 }
 
 model Category {
@@ -59,6 +64,8 @@ model Category {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+
+  recurringIncomes RecurringIncome[]
 }
 
 model Expense {
@@ -97,6 +104,61 @@ model Income {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+
+  recurringIncomeId String? @db.Uuid
+  recurringIncome   RecurringIncome? @relation(fields: [recurringIncomeId], references: [id])
+}
+
+model RecurringIncome {
+  id          String    @id @default(uuid()) @db.Uuid
+  title       String
+  description String?
+  amount      Decimal   @db.Decimal(10, 2)
+  frequency   Frequency
+  startDate   DateTime
+  nextDate    DateTime
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.Uuid
+
+  account   Account @relation(fields: [accountId], references: [id])
+  accountId String  @db.Uuid
+
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String   @db.Uuid
+
+  generatedIncomes Income[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Goal {
+  id     String   @id @default(uuid()) @db.Uuid
+  type   GoalType @default(INCOME)
+  amount Decimal  @db.Decimal(10, 2)
+  month  Int
+  year   Int
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.Uuid
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, type, month, year])
+}
+
+enum Frequency {
+  WEEKLY
+  BIWEEKLY // Quincenal
+  MONTHLY
+  YEARLY
+}
+
+enum GoalType {
+  INCOME
+  SAVINGS
 }
 
 enum Type {

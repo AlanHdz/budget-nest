@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Query, UseGuards } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 import { User } from '../../generated/prisma';
 import { ExpensesByCategoryMonthDto } from './dto/expenses-by-category-month.dto';
@@ -46,7 +46,9 @@ export class DashboardController {
   @ApiResponse({ status: 200, description: 'Get incomes by category belongs to user successfully' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getIncomesByCategoryMonth(@Query() incomesByCategoryMonthDto: IncomesByCategoryMonthDto, @GetUser() user: User) {
-    return await this.dashboardService.getIncomesByCategoryMonthly(incomesByCategoryMonthDto, user)
+    const data = await this.dashboardService.getIncomesByCategoryMonthly(incomesByCategoryMonthDto, user)
+
+    return { data, status: HttpStatus.OK }
   }
 
   @Get('/latest-movements')

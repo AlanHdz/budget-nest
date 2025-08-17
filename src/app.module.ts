@@ -12,6 +12,7 @@ import { ExpenseModule } from './expense/expense.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { RecurringIncomeModule } from './recurring-income/recurring-income.module';
 import { GoalsModule } from './goals/goals.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -26,7 +27,8 @@ import { GoalsModule } from './goals/goals.module';
     ExpenseModule,
     DashboardModule,
     RecurringIncomeModule,
-    GoalsModule
+    GoalsModule,
+    CommonModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

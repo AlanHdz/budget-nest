@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus, Query } from '@nestjs/common';
 import { IncomeService } from './income.service';
 import { CreateIncomeDto } from './dto/create-income.dto';
 import { UpdateIncomeDto } from './dto/update-income.dto';
@@ -6,6 +6,7 @@ import { JwtGuard } from '../auth/guards/auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { User } from '../../generated/prisma';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Incomes')
 @Controller('incomes')
@@ -22,25 +23,16 @@ export class IncomeController {
     return await this.incomeService.create(createIncomeDto, user);
   }
 
-  @Get()
-  @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Get all incomes by user' })
-  @ApiResponse({ status: 200, description: 'Get all incomes by user successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 500, description: 'Error in the server' })
-  async findAll(@GetUser() user: User) {
-    return await this.incomeService.findAll(user);
-  }
-
-  @Get('/latest-movements')
+  @Get('')
   @UseGuards(JwtGuard)
   @ApiOperation({ summary: 'Get Latest Movements by user' })
   @ApiResponse({ status: 200, description: 'Get Latest Movements by user successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  async getLatestMovements(@GetUser() user: User) {
-    return await this.incomeService.getLatestMovements(user);
+  async getPaginationIncomes(@GetUser() user: User, @Query() paginationDto: PaginationDto) {
+    const data = await this.incomeService.getPaginatedIncomes(user, paginationDto);
+    return { data: data, status: HttpStatus.OK }
   }
 
   @Get('/smart-summary')
@@ -51,7 +43,9 @@ export class IncomeController {
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getSmartSummary(@GetUser() user: User) {
-    return await this.incomeService.getSmartSummary(user.id);
+    const data = await this.incomeService.getSmartSummary(user.id);
+
+    return { data, status: HttpStatus.OK }
   }
 
   @Get('/monthly-goal')
@@ -62,7 +56,9 @@ export class IncomeController {
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getMonthlyGoal(@GetUser() user: User) {
-    return await this.incomeService.getMonthlyGoal(user.id);
+    const data = await this.incomeService.getMonthlyGoal(user.id);
+
+    return { data, status: HttpStatus.OK  }
   }
 
   @Get('/annual-projection')
@@ -73,7 +69,9 @@ export class IncomeController {
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getAnnualProjection(@GetUser() user:User) {
-    return await this.incomeService.getAnnualProjection(user.id);
+    const data = await this.incomeService.getAnnualProjection(user.id);
+
+    return { data, status: HttpStatus.OK }
   }
 
 

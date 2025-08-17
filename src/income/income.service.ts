@@ -2,13 +2,14 @@ import { BadRequestException, HttpStatus, Injectable, InternalServerErrorExcepti
 import { CreateIncomeDto } from './dto/create-income.dto';
 import { UpdateIncomeDto } from './dto/update-income.dto';
 import { PrismaClientKnownRequestError } from '../../generated/prisma/runtime/library';
-import { Frequency, Goal, GoalType, Income, User } from '../../generated/prisma';
+import { Frequency, Goal, GoalType, Income, Prisma, User } from '../../generated/prisma';
 import { PrismaService } from '../prisma/prisma.service';
 import { addMonths, addWeeks, addYears, endOfMonth, startOfMonth, subMonths, subWeeks, subYears } from 'date-fns';
 import { GoalsService } from '../goals/goals.service';
 import { SmartSummary } from './interfaces/smart-summary.interface';
 import { MonthlyGoal } from './interfaces/monthly-goal.interface';
 import { AnnualProjection } from './interfaces/annual-projection.interface';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class IncomeService {
@@ -90,42 +91,6 @@ export class IncomeService {
 
     } catch (error) {
 
-      this.handleErrors(error)
-    }
-
-  }
-
-  /**
-   * Obtiene todos los ingresos del usuario autenticado
-   * @param user 
-   * @returns {Promise<Income[]>}
-   */
-  async findAll(user: User): Promise<Income[]> {
-
-    try {
-
-      const incomes = await this.prisma.income.findMany({
-        where: { userId: user.id },
-        include: {
-          account: {
-            select: {
-              id: true,
-              name: true,
-              type: true
-            }
-          },
-          category: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      })
-
-      return incomes;
-
-    } catch (error) {
       this.handleErrors(error)
     }
 
@@ -305,29 +270,50 @@ export class IncomeService {
    * @param user 
    * @returns {Promise<Income[]>}
    */
-  async getLatestMovements(user: User): Promise<Income[]> {
+  async getPaginatedIncomes(user: User, paginationDto: PaginationDto): Promise<{ incomes: Income[], total: number }> {
 
     try {
 
-      const incomes = await this.prisma.income.findMany({
-        where: { userId: user.id },
-        include: {
-          category: {
-            select: {
-              id: true,
-              name: true,
-              color: true,
-              emoji: true
-            }
-          }
-        },
-        orderBy: {
-          createdAt: 'desc'
-        },
-        take: 10
-      })
+      const { page = 1, limit = 5, search } = paginationDto
 
-      return incomes;
+      const skip = (page - 1) * limit
+
+      const whereCondition: Prisma.IncomeWhereInput = {
+        userId: user.id
+      }
+
+      if (search) {
+        whereCondition.title = {
+          contains: search,
+          mode: 'insensitive',
+        };
+      }
+
+      const [incomes, total] = await Promise.all([
+        this.prisma.income.findMany({
+          where: whereCondition,
+          include: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+                color: true,
+                emoji: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: limit,
+          skip: skip
+        }),
+        this.prisma.income.count({
+          where: whereCondition,
+        }),
+      ])
+
+      return { incomes, total: total };
 
     } catch (error) {
       this.handleErrors(error)
@@ -340,7 +326,7 @@ export class IncomeService {
    * @param userId 
    * @returns {Promise<SmartSummary>}
    */
-  async getSmartSummary(userId: string) : Promise<SmartSummary> {
+  async getSmartSummary(userId: string): Promise<SmartSummary> {
 
     try {
 
@@ -374,7 +360,7 @@ export class IncomeService {
       ])
 
       // Total de ingresos del mes actual
-      const currentMonthTotal =  await this.getCurrentMonthIncome(currentMonthStart, currentMonthEnd, userId);
+      const currentMonthTotal = await this.getCurrentMonthIncome(currentMonthStart, currentMonthEnd, userId);
 
       // Total de ingresos del mes anterior
       const previousMonthTotal = await this.getPreviousMonthIncome(previousMonthStart, previousMonthEnd, userId);
@@ -423,7 +409,7 @@ export class IncomeService {
    * @param userId 
    * @returns {Promise<MonthlyGoal>}
    */
-  async getMonthlyGoal(userId: string) : Promise<MonthlyGoal> {
+  async getMonthlyGoal(userId: string): Promise<MonthlyGoal> {
 
     try {
 
@@ -460,19 +446,20 @@ export class IncomeService {
     }
 
   }
-  
+
   /**
    * Obtiene la proyeccion anual de los ingresos de un usuario
    * @param userId 
    * @returns {Promise<AnnualProjection>}
    */
-  async getAnnualProjection(userId: string) : Promise<AnnualProjection> {
+  async getAnnualProjection(userId: string): Promise<AnnualProjection> {
 
     try {
-      
+
       const recurringIncomes = await this.prisma.recurringIncome.findMany({
         where: { userId },
-        orderBy: { nextDate: 'asc' }
+        orderBy: { nextDate: 'asc' },
+        take: 3
       })
 
       const monthlyRecurringTotal = recurringIncomes.reduce((sum, item) => sum + item.amount.toNumber(), 0)
@@ -481,6 +468,7 @@ export class IncomeService {
         recurringMonthlyIncome: monthlyRecurringTotal,
         projectedAnnualIncome: monthlyRecurringTotal * 12,
         upcomingRecurringIncomes: recurringIncomes.map(ri => ({
+          id: ri.id,
           title: ri.title,
           amount: ri.amount.toNumber()
         }))
@@ -501,7 +489,7 @@ export class IncomeService {
    * @param userId 
    * @returns {Promise<number>}
    */
-  private async getCurrentMonthIncome(currentMonthStart: Date, currentMonthEnd: Date, userId: string) : Promise<number> {
+  private async getCurrentMonthIncome(currentMonthStart: Date, currentMonthEnd: Date, userId: string): Promise<number> {
 
     try {
       const currentMonthIncomeRecords = (await this.prisma.income.findMany({ where: { userId, createdAt: { gte: currentMonthStart, lte: currentMonthEnd } } }));
@@ -520,7 +508,7 @@ export class IncomeService {
    * @param userId 
    * @returns {Promise<number>}
    */
-  private async getPreviousMonthIncome(previousMonthStart: Date, previousMonthEnd: Date, userId: string) : Promise<number> {
+  private async getPreviousMonthIncome(previousMonthStart: Date, previousMonthEnd: Date, userId: string): Promise<number> {
     try {
       const previousMonthIncomeRecords = (await this.prisma.income.findMany({ where: { userId, createdAt: { gte: previousMonthStart, lte: previousMonthEnd } } }));
       const previousMonthTotal = previousMonthIncomeRecords.reduce((sum, income) => sum + income.amount.toNumber(), 0);

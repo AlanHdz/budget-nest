@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDecimal, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUUID } from "class-validator";
+import { IsDateString, IsDecimal, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUUID } from "class-validator";
 
 export class CreateExpenseDto {
 
@@ -43,5 +43,9 @@ export class CreateExpenseDto {
   @IsUUID()
   @IsNotEmpty()
   categoryId: string;
+
+
+  @IsDateString()
+  createdAt: Date;
 
 }

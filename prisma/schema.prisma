@@ -102,10 +102,12 @@ model Income {
   category   Category @relation(fields: [categoryId], references: [id])
   categoryId String   @db.Uuid
 
+  dateIncome DateTime @default(now())
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 
-  recurringIncomeId String? @db.Uuid
+  recurringIncomeId String?          @db.Uuid
   recurringIncome   RecurringIncome? @relation(fields: [recurringIncomeId], references: [id])
 }
 

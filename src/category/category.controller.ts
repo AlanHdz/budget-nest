@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -26,8 +26,10 @@ export class CategoryController {
   @ApiOperation({ summary: 'Get all categories by user' })
   @ApiResponse({ status: 200, description: 'Get all categories by user succesfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  findAll(@GetUser() user) {
-    return this.categoryService.findAll(user);
+  async findAll(@GetUser() user) {
+    const data = await this.categoryService.findAll(user);
+    
+    return { data, status: HttpStatus }
   }
 
   @Get(':id')

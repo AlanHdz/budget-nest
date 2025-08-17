@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
@@ -30,7 +30,9 @@ export class AccountController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async findAll(@GetUser() user) {
-    return await this.accountService.findAll(user);
+    const data = await this.accountService.findAll(user);
+
+    return { data, status: HttpStatus.OK }
   }
 
   @Get(':id')

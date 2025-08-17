@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDecimal, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUUID } from "class-validator";
+import { IsDateString, IsDecimal, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUUID } from "class-validator";
 
 export class CreateIncomeDto {
 
@@ -48,4 +48,6 @@ export class CreateIncomeDto {
   @IsOptional()
   recurringIncomeId? : string;
 
+  @IsDateString()
+  dateIncome: string
 }

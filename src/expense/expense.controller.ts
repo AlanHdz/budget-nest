@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus } from '@nestjs/common';
 import { ExpenseService } from './expense.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
@@ -18,8 +18,10 @@ export class ExpenseController {
   @ApiResponse({ status: 201, description: 'The expense has been successfully created.' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  create(@Body() createExpenseDto: CreateExpenseDto, @GetUser() user: User) {
-    return this.expenseService.create(createExpenseDto, user);
+  async create(@Body() createExpenseDto: CreateExpenseDto, @GetUser() user: User) {
+    const data = await this.expenseService.create(createExpenseDto, user);
+
+    return { data, status: HttpStatus.CREATED }
   }
 
   @Get()
@@ -28,8 +30,9 @@ export class ExpenseController {
   @ApiResponse({ status: 200, description: 'Get all expenses by user successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  findAll(@GetUser() user) {
-    return this.expenseService.findAll(user);
+  async findAll(@GetUser() user) {
+    const data = await this.expenseService.findAll(user);
+    return { data, status: HttpStatus.OK }
   }
 
   @Get(':id')
@@ -39,8 +42,9 @@ export class ExpenseController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found expense' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  findOne(@Param('id') id: string, @GetUser() user: User) {
-    return this.expenseService.findOne(id, user);
+  async findOne(@Param('id') id: string, @GetUser() user: User) {
+    const data = await this.expenseService.findOne(id, user);
+    return { data, status: HttpStatus.OK }
   }
 
   @Patch(':id')
@@ -50,8 +54,9 @@ export class ExpenseController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found expense' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  update(@Param('id') id: string, @Body() updateExpenseDto: UpdateExpenseDto, @GetUser() user: User) {
-    return this.expenseService.update(id, updateExpenseDto, user);
+  async update(@Param('id') id: string, @Body() updateExpenseDto: UpdateExpenseDto, @GetUser() user: User) {
+    const data = await this.expenseService.update(id, updateExpenseDto, user);
+    return { data, status: HttpStatus.OK }
   }
 
   @Delete(':id')
@@ -61,7 +66,8 @@ export class ExpenseController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found expense' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  remove(@Param('id') id: string, @GetUser() user: User) {
-    return this.expenseService.remove(id, user);
+  async remove(@Param('id') id: string, @GetUser() user: User) {
+    const data = await this.expenseService.remove(id, user);
+    return { data, status: HttpStatus.OK }
   }
 }

@@ -17,8 +17,11 @@ export class CategoryController {
   @ApiResponse({ status: 201, description: 'The category has been successfully created.' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  create(@Body() createCategoryDto: CreateCategoryDto, @GetUser() user) {
-    return this.categoryService.create(createCategoryDto, user);
+  async create(@Body() createCategoryDto: CreateCategoryDto, @GetUser() user) {
+    const data = await this.categoryService.create(createCategoryDto, user);
+
+    return { data, status: HttpStatus.CREATED }
+
   }
 
   @Get()
@@ -38,8 +41,11 @@ export class CategoryController {
   @ApiResponse({ status: 200, description: 'Get one category by user succesfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found category' })
-  findOne(@Param('id') id: string, @GetUser() user) {
-    return this.categoryService.findOne(id, user);
+  async findOne(@Param('id') id: string, @GetUser() user) {
+    const data = await this.categoryService.findOne(id, user);
+
+    return { data, status: HttpStatus.OK }
+
   }
 
   @Patch(':id')
@@ -49,8 +55,10 @@ export class CategoryController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found category' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto, @GetUser() user) {
-    return this.categoryService.update(id, updateCategoryDto, user);
+  async update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto, @GetUser() user) {
+    const data = await this.categoryService.update(id, updateCategoryDto, user);
+
+    return { data, status: HttpStatus.OK }
   }
 
   @Delete(':id')
@@ -60,7 +68,9 @@ export class CategoryController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found category' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  remove(@Param('id') id: string, @GetUser() user) {
-    return this.categoryService.remove(id, user);
+  async remove(@Param('id') id: string, @GetUser() user) {
+    const data = await this.categoryService.remove(id, user);
+
+    return { data, status: HttpStatus.OK }
   }
 }

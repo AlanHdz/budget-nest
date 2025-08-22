@@ -44,7 +44,6 @@ export class IncomeController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getSmartSummary(@GetUser() user: User) {
     const data = await this.incomeService.getSmartSummary(user.id);
-
     return { data, status: HttpStatus.OK }
   }
 
@@ -57,7 +56,6 @@ export class IncomeController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getMonthlyGoal(@GetUser() user: User) {
     const data = await this.incomeService.getMonthlyGoal(user.id);
-
     return { data, status: HttpStatus.OK  }
   }
 
@@ -70,7 +68,6 @@ export class IncomeController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getAnnualProjection(@GetUser() user:User) {
     const data = await this.incomeService.getAnnualProjection(user.id);
-
     return { data, status: HttpStatus.OK }
   }
 
@@ -83,7 +80,8 @@ export class IncomeController {
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async findOne(@Param('id') id: string, @GetUser() user: User) {
-    return await this.incomeService.findOne(id, user);
+    const data = await this.incomeService.findOne(id, user);
+    return { data, status: HttpStatus.OK }
   }
 
   @Patch(':id')
@@ -94,7 +92,8 @@ export class IncomeController {
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async update(@Param('id') id: string, @Body() updateIncomeDto: UpdateIncomeDto, @GetUser() user: User) {
-    return await this.incomeService.update(id, updateIncomeDto, user);
+    const data = await this.incomeService.update(id, updateIncomeDto, user);
+    return { data, status: HttpStatus.OK }
   }
 
   @Delete(':id')
@@ -105,6 +104,7 @@ export class IncomeController {
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async remove(@Param('id') id: string, @GetUser() user: User) {
-    return await this.incomeService.remove(id, user);
+    const data = await this.incomeService.remove(id, user);
+    return { data, status: HttpStatus.OK }
   }
 }

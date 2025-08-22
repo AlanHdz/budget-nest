@@ -19,7 +19,8 @@ export class DashboardController {
   @ApiResponse({ status: 200, description: 'Get summary incomes and expenses by the user successfully' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getTotalBalance(@GetUser() user: User) {
-    return await this.dashboardService.getTotalBalance(user)
+    const data = await this.dashboardService.getTotalBalance(user)
+    return { data, status: HttpStatus.OK }
   }
 
   @Get('/monthly-flow')
@@ -28,7 +29,8 @@ export class DashboardController {
   @ApiResponse({ status: 200, description: 'Get monthly flow by the user successfully' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getMonthlyFlow(@GetUser() user: User) {
-    return await this.dashboardService.getMonthlyFlow(user);
+    const data = await this.dashboardService.getMonthlyFlow(user);
+    return { data, status: HttpStatus.OK }
   }
 
   @Get('/expenses-by-category')
@@ -37,7 +39,8 @@ export class DashboardController {
   @ApiResponse({ status: 200, description: 'Get expenses by category belongs to user successfully' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getExpensesByCategoryMonth(@Query() expensesByCategoryMonthDto: ExpensesByCategoryMonthDto, @GetUser() user: User) {
-    return await this.dashboardService.getExpensesByCategoryMonthly(expensesByCategoryMonthDto, user)
+    const data = await this.dashboardService.getExpensesByCategoryMonthly(expensesByCategoryMonthDto, user)
+    return { data, status: HttpStatus.OK }
   }
 
   @Get('/incomes-by-category')
@@ -47,7 +50,6 @@ export class DashboardController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getIncomesByCategoryMonth(@Query() incomesByCategoryMonthDto: IncomesByCategoryMonthDto, @GetUser() user: User) {
     const data = await this.dashboardService.getIncomesByCategoryMonthly(incomesByCategoryMonthDto, user)
-
     return { data, status: HttpStatus.OK }
   }
 
@@ -60,7 +62,8 @@ export class DashboardController {
     @Query() limitLtaestMovementsDto: LimitLatestMovementsDto,
     @GetUser() user: User
   ) {
-    return await this.dashboardService.getLatestMovements(limitLtaestMovementsDto, user)
+    const data = await this.dashboardService.getLatestMovements(limitLtaestMovementsDto, user)
+    return { data, status: HttpStatus.OK }
   }
 
 }

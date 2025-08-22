@@ -19,8 +19,9 @@ export class AccountController {
   @ApiResponse({ status: 201, description: 'The account has been successfully created.' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  create(@Body() createAccountDto: CreateAccountDto, @GetUser() user) {
-    return this.accountService.create(createAccountDto, user);
+  async create(@Body() createAccountDto: CreateAccountDto, @GetUser() user) {
+    const data = await this.accountService.create(createAccountDto, user);
+    return { data, status: HttpStatus.CREATED }
   }
 
   @Get()
@@ -31,7 +32,6 @@ export class AccountController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async findAll(@GetUser() user) {
     const data = await this.accountService.findAll(user);
-
     return { data, status: HttpStatus.OK }
   }
 
@@ -42,8 +42,9 @@ export class AccountController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found account' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  findOne(@Param('id') id: string, @GetUser() user) {
-    return this.accountService.findOne(id, user);
+  async findOne(@Param('id') id: string, @GetUser() user) {
+    const data = this.accountService.findOne(id, user);
+    return { data, status: HttpStatus.OK }
   }
 
   @Patch(':id')
@@ -53,8 +54,9 @@ export class AccountController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   @ApiResponse({ status: 404, description: 'Not found account' })
-  update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto, @GetUser() user) {
-    return this.accountService.update(id, updateAccountDto, user);
+  async update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto, @GetUser() user) {
+    const data = await this.accountService.update(id, updateAccountDto, user);
+    return { data, status: HttpStatus.OK }
   }
 
   @Delete(':id')
@@ -64,7 +66,8 @@ export class AccountController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   @ApiResponse({ status: 404, description: 'Not found account' })
-  remove(@Param('id') id: string, @GetUser() user) {
-    return this.accountService.remove(id, user);
+  async remove(@Param('id') id: string, @GetUser() user) {
+    const data = this.accountService.remove(id, user);
+    return { data, status: HttpStatus.OK }
   }
 }

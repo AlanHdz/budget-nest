@@ -3,10 +3,11 @@ import { IncomeService } from './income.service';
 import { IncomeController } from './income.controller';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GoalsModule } from '../goals/goals.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
   controllers: [IncomeController],
-  providers: [IncomeService, PrismaService],
-  imports: [GoalsModule]
+  providers: [IncomeService],
+  imports: [GoalsModule, PrismaModule]
 })
 export class IncomeModule {}

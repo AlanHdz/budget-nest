@@ -82,7 +82,6 @@ export class UserService {
 
   private handleErrors(error: any): never {
 
-
     if (error.response) {
       throw error;
     }

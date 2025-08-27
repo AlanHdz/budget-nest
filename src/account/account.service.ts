@@ -120,7 +120,7 @@ export class AccountService {
   private handleErrors(error: any) : never {
   
     if (error.response) {
-      throw new InternalServerErrorException(error.response)
+      throw error
     }
     
     this.logger.error(error);

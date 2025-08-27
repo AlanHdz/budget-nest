@@ -43,7 +43,7 @@ export class AccountController {
   @ApiResponse({ status: 404, description: 'Not found account' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async findOne(@Param('id') id: string, @GetUser() user) {
-    const data = this.accountService.findOne(id, user);
+    const data = await this.accountService.findOne(id, user);
     return { data, status: HttpStatus.OK }
   }
 

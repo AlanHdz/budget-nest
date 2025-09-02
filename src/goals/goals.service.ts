@@ -166,10 +166,11 @@ export class GoalsService {
 
   private handleErrors(error: any): never {
 
-    if (error.hasOwnProperty('response')) {
-      throw error;
+    if (error.response) {
+      throw error
     }
-
+    console.log("dsadsadsada");
+    
     this.logger.error(error);
 
     if (error instanceof BadRequestException) {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus, HttpCode } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -13,6 +13,7 @@ export class CategoryController {
 
   @Post()
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new category' })
   @ApiResponse({ status: 201, description: 'The category has been successfully created.' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -20,7 +21,7 @@ export class CategoryController {
   async create(@Body() createCategoryDto: CreateCategoryDto, @GetUser() user) {
     const data = await this.categoryService.create(createCategoryDto, user);
 
-    return { data, status: HttpStatus.CREATED }
+    return { data }
 
   }
 
@@ -32,7 +33,7 @@ export class CategoryController {
   async findAll(@GetUser() user) {
     const data = await this.categoryService.findAll(user);
     
-    return { data, status: HttpStatus }
+    return { data }
   }
 
   @Get(':id')
@@ -44,7 +45,7 @@ export class CategoryController {
   async findOne(@Param('id') id: string, @GetUser() user) {
     const data = await this.categoryService.findOne(id, user);
 
-    return { data, status: HttpStatus.OK }
+    return { data }
 
   }
 
@@ -58,7 +59,7 @@ export class CategoryController {
   async update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto, @GetUser() user) {
     const data = await this.categoryService.update(id, updateCategoryDto, user);
 
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @Delete(':id')
@@ -71,6 +72,6 @@ export class CategoryController {
   async remove(@Param('id') id: string, @GetUser() user) {
     const data = await this.categoryService.remove(id, user);
 
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 }

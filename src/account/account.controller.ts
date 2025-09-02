@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus, HttpCode } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
@@ -18,10 +18,11 @@ export class AccountController {
   @ApiOperation({ summary: 'Create a new account' })
   @ApiResponse({ status: 201, description: 'The account has been successfully created.' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @HttpCode(HttpStatus.CREATED)
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async create(@Body() createAccountDto: CreateAccountDto, @GetUser() user) {
     const data = await this.accountService.create(createAccountDto, user);
-    return { data, status: HttpStatus.CREATED }
+    return { data }
   }
 
   @Get()
@@ -32,7 +33,7 @@ export class AccountController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async findAll(@GetUser() user) {
     const data = await this.accountService.findAll(user);
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @Get(':id')
@@ -44,7 +45,7 @@ export class AccountController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async findOne(@Param('id') id: string, @GetUser() user) {
     const data = await this.accountService.findOne(id, user);
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @Patch(':id')
@@ -56,7 +57,7 @@ export class AccountController {
   @ApiResponse({ status: 404, description: 'Not found account' })
   async update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto, @GetUser() user) {
     const data = await this.accountService.update(id, updateAccountDto, user);
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @Delete(':id')
@@ -67,7 +68,7 @@ export class AccountController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   @ApiResponse({ status: 404, description: 'Not found account' })
   async remove(@Param('id') id: string, @GetUser() user) {
-    const data = this.accountService.remove(id, user);
-    return { data, status: HttpStatus.OK }
+    const data = await this.accountService.remove(id, user);
+    return { data }
   }
 }

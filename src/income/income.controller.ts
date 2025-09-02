@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus, Query, HttpCode } from '@nestjs/common';
 import { IncomeService } from './income.service';
 import { CreateIncomeDto } from './dto/create-income.dto';
 import { UpdateIncomeDto } from './dto/update-income.dto';
@@ -15,12 +15,14 @@ export class IncomeController {
 
   @Post()
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new income' })
   @ApiResponse({ status: 201, description: 'The income has been successfully created.' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async create(@Body() createIncomeDto: CreateIncomeDto, @GetUser() user: User) {
-    return await this.incomeService.create(createIncomeDto, user);
+    const data = await this.incomeService.create(createIncomeDto, user);
+    return { data }
   }
 
   @Get('')
@@ -32,7 +34,7 @@ export class IncomeController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getPaginationIncomes(@GetUser() user: User, @Query() paginationDto: PaginationDto) {
     const data = await this.incomeService.getPaginatedIncomes(user, paginationDto);
-    return { data: data, status: HttpStatus.OK }
+    return { data }
   }
 
   @Get('/smart-summary')
@@ -44,7 +46,7 @@ export class IncomeController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getSmartSummary(@GetUser() user: User) {
     const data = await this.incomeService.getSmartSummary(user.id);
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @Get('/monthly-goal')
@@ -56,7 +58,7 @@ export class IncomeController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getMonthlyGoal(@GetUser() user: User) {
     const data = await this.incomeService.getMonthlyGoal(user.id);
-    return { data, status: HttpStatus.OK  }
+    return { data }
   }
 
   @Get('/annual-projection')
@@ -68,7 +70,7 @@ export class IncomeController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getAnnualProjection(@GetUser() user:User) {
     const data = await this.incomeService.getAnnualProjection(user.id);
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
 
@@ -81,7 +83,7 @@ export class IncomeController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async findOne(@Param('id') id: string, @GetUser() user: User) {
     const data = await this.incomeService.findOne(id, user);
-    return { data, status: HttpStatus.OK }
+    return { data}
   }
 
   @Patch(':id')
@@ -93,7 +95,7 @@ export class IncomeController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async update(@Param('id') id: string, @Body() updateIncomeDto: UpdateIncomeDto, @GetUser() user: User) {
     const data = await this.incomeService.update(id, updateIncomeDto, user);
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @Delete(':id')
@@ -105,6 +107,6 @@ export class IncomeController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async remove(@Param('id') id: string, @GetUser() user: User) {
     const data = await this.incomeService.remove(id, user);
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 }

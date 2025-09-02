@@ -74,7 +74,7 @@ export class RecurringIncomeService {
 
   private handleErrors(error: any): never {
 
-    if (error.hasOwnProperty('response')) {
+    if (error.response) {
       throw error;
     }
 

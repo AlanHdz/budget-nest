@@ -20,7 +20,7 @@ export class DashboardController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getTotalBalance(@GetUser() user: User) {
     const data = await this.dashboardService.getTotalBalance(user)
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @Get('/monthly-flow')
@@ -30,7 +30,7 @@ export class DashboardController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getMonthlyFlow(@GetUser() user: User) {
     const data = await this.dashboardService.getMonthlyFlow(user);
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @Get('/expenses-by-category')
@@ -40,7 +40,7 @@ export class DashboardController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getExpensesByCategoryMonth(@Query() expensesByCategoryMonthDto: ExpensesByCategoryMonthDto, @GetUser() user: User) {
     const data = await this.dashboardService.getExpensesByCategoryMonthly(expensesByCategoryMonthDto, user)
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @Get('/incomes-by-category')
@@ -50,7 +50,7 @@ export class DashboardController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getIncomesByCategoryMonth(@Query() incomesByCategoryMonthDto: IncomesByCategoryMonthDto, @GetUser() user: User) {
     const data = await this.dashboardService.getIncomesByCategoryMonthly(incomesByCategoryMonthDto, user)
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @Get('/latest-movements')
@@ -63,7 +63,7 @@ export class DashboardController {
     @GetUser() user: User
   ) {
     const data = await this.dashboardService.getLatestMovements(limitLtaestMovementsDto, user)
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpStatus, HttpCode } from '@nestjs/common';
 import { ExpenseService } from './expense.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
@@ -14,6 +14,7 @@ export class ExpenseController {
 
   @Post()
   @UseGuards(JwtGuard)
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new expense' })
   @ApiResponse({ status: 201, description: 'The expense has been successfully created.' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -21,7 +22,7 @@ export class ExpenseController {
   async create(@Body() createExpenseDto: CreateExpenseDto, @GetUser() user: User) {
     const data = await this.expenseService.create(createExpenseDto, user);
 
-    return { data, status: HttpStatus.CREATED }
+    return { data }
   }
 
   @Get()
@@ -32,7 +33,7 @@ export class ExpenseController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async findAll(@GetUser() user) {
     const data = await this.expenseService.findAll(user);
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @Get(':id')
@@ -44,7 +45,7 @@ export class ExpenseController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async findOne(@Param('id') id: string, @GetUser() user: User) {
     const data = await this.expenseService.findOne(id, user);
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @Patch(':id')
@@ -56,7 +57,7 @@ export class ExpenseController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async update(@Param('id') id: string, @Body() updateExpenseDto: UpdateExpenseDto, @GetUser() user: User) {
     const data = await this.expenseService.update(id, updateExpenseDto, user);
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @Delete(':id')
@@ -68,6 +69,6 @@ export class ExpenseController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async remove(@Param('id') id: string, @GetUser() user: User) {
     const data = await this.expenseService.remove(id, user);
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 }

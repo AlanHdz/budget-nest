@@ -166,12 +166,12 @@ describe('AccountService', () => {
     const mockUser: User = {
       id: 'user-id-1',
       name: 'Test User',
-      lastName: 'Test',
       username: 'test',
       email: 'test@example.com',
       password: 'hashedPassword',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      deletedAt: null
     }
 
     const accountId = 'account-id-1';

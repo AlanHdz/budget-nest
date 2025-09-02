@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, UseGuards, HttpCode } from '@nestjs/common';
 import { GoalsService } from './goals.service';
 import { JwtGuard } from '../auth/guards/auth.guard';
 import { CreateGoalDto } from './dto/create-goal.dto';
@@ -13,6 +13,7 @@ export class GoalsController {
 
   @UseGuards(JwtGuard)
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Creae goal by user' })
   @ApiResponse({ status: 200, description: 'Get Latest Movements by user successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -21,7 +22,7 @@ export class GoalsController {
   async create(@Body() createGoalDto: CreateGoalDto, @GetUser() user: User) {
     const data = await this.goalsService.create(user.id, createGoalDto)
 
-    return { data, status: HttpStatus.CREATED }
+    return { data }
   }
 
   @UseGuards(JwtGuard)
@@ -33,7 +34,7 @@ export class GoalsController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async findAll(@GetUser() user: User) {
     const data = await this.goalsService.findAll(user.id)
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @UseGuards(JwtGuard)
@@ -45,7 +46,7 @@ export class GoalsController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async findOne(@Param('id') id: string, @GetUser() user: User) {
     const data = await this.goalsService.findOneById(id, user.id)
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @UseGuards(JwtGuard)
@@ -57,7 +58,7 @@ export class GoalsController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async update(@Param('id') id: string, @Body() updateGoalDto: UpdateGoalDto, @GetUser() user: User) {
     const data = await this.goalsService.update(id, user.id, updateGoalDto)
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
   @UseGuards(JwtGuard)
@@ -69,7 +70,7 @@ export class GoalsController {
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async remove(@Param('id') id: string, @GetUser() user: User) {
     const data = await this.goalsService.remove(id, user.id)
-    return { data, status: HttpStatus.OK }
+    return { data }
   }
 
 

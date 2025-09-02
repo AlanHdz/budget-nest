@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, Logger, 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRecurringIncomeDto } from './dto/create-recurring-income.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { RecurringIncome } from '../../generated/prisma';
 
 @Injectable()
 export class RecurringIncomeService {
@@ -12,7 +13,7 @@ export class RecurringIncomeService {
     private readonly prisma: PrismaService
   ) { }
 
-  async create(userId: string, createRecurringIncomeDto: CreateRecurringIncomeDto) {
+  async create(userId: string, createRecurringIncomeDto: CreateRecurringIncomeDto) : Promise<{ data: RecurringIncome }> {
 
     try {
 
@@ -49,7 +50,7 @@ export class RecurringIncomeService {
         }
       })
 
-      return newRecurringIncome;
+      return { data: newRecurringIncome };
 
     } catch (error) {
       this.handleErrors(error)
@@ -57,14 +58,16 @@ export class RecurringIncomeService {
 
   }
 
-  async findAll(userId: string) {
+  async findAll(userId: string) : Promise<{ data: RecurringIncome[] }> {
 
     try {
       
-      return await this.prisma.recurringIncome.findMany({
+      const recurringIncomes = await this.prisma.recurringIncome.findMany({
         where: { userId },
         orderBy: { nextDate: 'asc' }
       })
+
+      return { data: recurringIncomes };
 
     } catch (error) {
       this.handleErrors(error)

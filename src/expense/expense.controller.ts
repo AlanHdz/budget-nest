@@ -20,9 +20,7 @@ export class ExpenseController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async create(@Body() createExpenseDto: CreateExpenseDto, @GetUser() user: User) {
-    const data = await this.expenseService.create(createExpenseDto, user);
-
-    return { data }
+    return await this.expenseService.create(createExpenseDto, user);
   }
 
   @Get()
@@ -32,8 +30,7 @@ export class ExpenseController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async findAll(@GetUser() user) {
-    const data = await this.expenseService.findAll(user);
-    return { data }
+    return await this.expenseService.findAll(user);
   }
 
   @Get(':id')
@@ -44,8 +41,7 @@ export class ExpenseController {
   @ApiResponse({ status: 404, description: 'Not found expense' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async findOne(@Param('id') id: string, @GetUser() user: User) {
-    const data = await this.expenseService.findOne(id, user);
-    return { data }
+    return await this.expenseService.findOne(id, user);
   }
 
   @Patch(':id')
@@ -56,19 +52,18 @@ export class ExpenseController {
   @ApiResponse({ status: 404, description: 'Not found expense' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async update(@Param('id') id: string, @Body() updateExpenseDto: UpdateExpenseDto, @GetUser() user: User) {
-    const data = await this.expenseService.update(id, updateExpenseDto, user);
-    return { data }
+    return await this.expenseService.update(id, updateExpenseDto, user);
   }
 
   @Delete(':id')
   @UseGuards(JwtGuard)
   @ApiOperation({ summary: 'Delete an expense by user' })
-  @ApiResponse({ status: 200, description: 'Delete an expense by user successfully' })
+  @ApiResponse({ status: 204, description: 'Delete an expense by user successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found expense' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
+  @HttpCode(204)
   async remove(@Param('id') id: string, @GetUser() user: User) {
-    const data = await this.expenseService.remove(id, user);
-    return { data }
+    return await this.expenseService.remove(id, user);
   }
 }

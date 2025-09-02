@@ -5,6 +5,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { JwtGuard } from '../auth/guards/auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { User } from '../../generated/prisma';
 
 @ApiTags('Categories')
 @Controller('categories')
@@ -18,11 +19,8 @@ export class CategoryController {
   @ApiResponse({ status: 201, description: 'The category has been successfully created.' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  async create(@Body() createCategoryDto: CreateCategoryDto, @GetUser() user) {
-    const data = await this.categoryService.create(createCategoryDto, user);
-
-    return { data }
-
+  async create(@Body() createCategoryDto: CreateCategoryDto, @GetUser() user: User) {
+    return await this.categoryService.create(createCategoryDto, user);
   }
 
   @Get()
@@ -30,10 +28,8 @@ export class CategoryController {
   @ApiOperation({ summary: 'Get all categories by user' })
   @ApiResponse({ status: 200, description: 'Get all categories by user succesfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async findAll(@GetUser() user) {
-    const data = await this.categoryService.findAll(user);
-    
-    return { data }
+  async findAll(@GetUser() user: User) {
+    return await this.categoryService.findAll(user);
   }
 
   @Get(':id')
@@ -42,11 +38,8 @@ export class CategoryController {
   @ApiResponse({ status: 200, description: 'Get one category by user succesfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found category' })
-  async findOne(@Param('id') id: string, @GetUser() user) {
-    const data = await this.categoryService.findOne(id, user);
-
-    return { data }
-
+  async findOne(@Param('id') id: string, @GetUser() user: User) {
+    return await this.categoryService.findOne(id, user);
   }
 
   @Patch(':id')
@@ -56,22 +49,19 @@ export class CategoryController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found category' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  async update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto, @GetUser() user) {
-    const data = await this.categoryService.update(id, updateCategoryDto, user);
-
-    return { data }
+  async update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto, @GetUser() user: User) {
+    return await this.categoryService.update(id, updateCategoryDto, user);
   }
 
   @Delete(':id')
   @UseGuards(JwtGuard)
   @ApiOperation({ summary: 'Delete a category by user' })
-  @ApiResponse({ status: 200, description: 'Delete a category by user succesfully' })
+  @ApiResponse({ status: 204, description: 'Delete a category by user succesfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found category' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  async remove(@Param('id') id: string, @GetUser() user) {
-    const data = await this.categoryService.remove(id, user);
-
-    return { data }
+  @HttpCode(204)
+  async remove(@Param('id') id: string, @GetUser() user: User) {
+    return await this.categoryService.remove(id, user);
   }
 }

@@ -21,8 +21,7 @@ export class IncomeController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async create(@Body() createIncomeDto: CreateIncomeDto, @GetUser() user: User) {
-    const data = await this.incomeService.create(createIncomeDto, user);
-    return { data }
+    return await this.incomeService.create(createIncomeDto, user);
   }
 
   @Get('')
@@ -33,8 +32,7 @@ export class IncomeController {
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getPaginationIncomes(@GetUser() user: User, @Query() paginationDto: PaginationDto) {
-    const data = await this.incomeService.getPaginatedIncomes(user, paginationDto);
-    return { data }
+    return await this.incomeService.getPaginatedIncomes(user, paginationDto);
   }
 
   @Get('/smart-summary')
@@ -45,8 +43,7 @@ export class IncomeController {
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getSmartSummary(@GetUser() user: User) {
-    const data = await this.incomeService.getSmartSummary(user.id);
-    return { data }
+    return await this.incomeService.getSmartSummary(user.id);
   }
 
   @Get('/monthly-goal')
@@ -57,8 +54,7 @@ export class IncomeController {
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getMonthlyGoal(@GetUser() user: User) {
-    const data = await this.incomeService.getMonthlyGoal(user.id);
-    return { data }
+    return await this.incomeService.getMonthlyGoal(user.id);
   }
 
   @Get('/annual-projection')
@@ -69,8 +65,7 @@ export class IncomeController {
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getAnnualProjection(@GetUser() user:User) {
-    const data = await this.incomeService.getAnnualProjection(user.id);
-    return { data }
+    return await this.incomeService.getAnnualProjection(user.id);
   }
 
 
@@ -82,8 +77,7 @@ export class IncomeController {
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async findOne(@Param('id') id: string, @GetUser() user: User) {
-    const data = await this.incomeService.findOne(id, user);
-    return { data}
+    return await this.incomeService.findOne(id, user);
   }
 
   @Patch(':id')
@@ -94,8 +88,7 @@ export class IncomeController {
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async update(@Param('id') id: string, @Body() updateIncomeDto: UpdateIncomeDto, @GetUser() user: User) {
-    const data = await this.incomeService.update(id, updateIncomeDto, user);
-    return { data }
+    return await this.incomeService.update(id, updateIncomeDto, user);
   }
 
   @Delete(':id')
@@ -106,7 +99,6 @@ export class IncomeController {
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async remove(@Param('id') id: string, @GetUser() user: User) {
-    const data = await this.incomeService.remove(id, user);
-    return { data }
+    return await this.incomeService.remove(id, user);
   }
 }

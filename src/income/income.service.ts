@@ -28,11 +28,9 @@ export class IncomeService {
    * @param user 
    * @returns {Promise<Income>}
    */
-  async create(createIncomeDto: CreateIncomeDto, user: User): Promise<Income> {
+  async create(createIncomeDto: CreateIncomeDto, user: User): Promise<{ data: Income }> {
 
     try {
-
-
       const { accountId, amount, recurringIncomeId } = createIncomeDto;
 
       const account = await this.prisma.account.findFirst({
@@ -43,7 +41,7 @@ export class IncomeService {
         throw new NotFoundException(`La cuenta con ID ${accountId} no fue encontrada`)
       }
 
-      return this.prisma.$transaction(async (prismaTx) => {
+      const newIncome = await this.prisma.$transaction(async (prismaTx) => {
 
         const newIncome = await prismaTx.income.create({
           data: {
@@ -89,6 +87,8 @@ export class IncomeService {
 
       })
 
+      return { data: newIncome }
+
     } catch (error) {
 
       this.handleErrors(error)
@@ -102,7 +102,7 @@ export class IncomeService {
    * @param user 
    * @returns {Promise<Income>}
    */
-  async findOne(id: string, user: User): Promise<Income> {
+  async findOne(id: string, user: User): Promise<{ data: Income }> {
 
     try {
 
@@ -129,7 +129,7 @@ export class IncomeService {
         throw new NotFoundException('Income not found')
       }
 
-      return income;
+      return { data: income };
 
     } catch (error) {
       this.handleErrors(error)
@@ -145,7 +145,7 @@ export class IncomeService {
    * @param user 
    * @returns {Promise<Income>}
    */
-  async update(id: string, updateIncomeDto: UpdateIncomeDto, user: User): Promise<Income> {
+  async update(id: string, updateIncomeDto: UpdateIncomeDto, user: User): Promise<{ data: Income }> {
 
     try {
 
@@ -159,7 +159,7 @@ export class IncomeService {
         throw new NotFoundException('Income not found')
       }
 
-      return this.prisma.$transaction(async (prismaTx) => {
+      const updatedIncome = await this.prisma.$transaction(async (prismaTx) => {
 
         await prismaTx.account.update({
           where: { id: incomeOriginal.accountId },
@@ -217,6 +217,8 @@ export class IncomeService {
         return updatedIncome;
       })
 
+      return { data: updatedIncome }
+
     } catch (error) {
       this.handleErrors(error)
     }
@@ -229,7 +231,7 @@ export class IncomeService {
    * @param user 
    * @returns {Promise<Object>}
    */
-  async remove(id: string, user: User): Promise<Object> {
+  async remove(id: string, user: User): Promise<void> {
 
     const incomeOriginal = await this.prisma.income.findFirst({
       where: { id: id, userId: user.id }
@@ -261,8 +263,6 @@ export class IncomeService {
 
     })
 
-    return { message: 'Income deleted successfully', status: HttpStatus.OK }
-
   }
 
   /**
@@ -270,7 +270,7 @@ export class IncomeService {
    * @param user 
    * @returns {Promise<Income[]>}
    */
-  async getPaginatedIncomes(user: User, paginationDto: PaginationDto): Promise<{ incomes: Income[], total: number }> {
+  async getPaginatedIncomes(user: User, paginationDto: PaginationDto): Promise<{ data:{ incomes: Income[], total: number }}> {
 
     try {
 
@@ -313,7 +313,7 @@ export class IncomeService {
         }),
       ])
 
-      return { incomes, total: total };
+      return { data: { incomes, total: total } };
 
     } catch (error) {
       this.handleErrors(error)

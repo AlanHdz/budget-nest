@@ -14,7 +14,7 @@ export class AccountService {
     private readonly prisma: PrismaService
   ) {}
 
-  async create(createAccountDto: CreateAccountDto, user: User) : Promise<Account> {
+  async create(createAccountDto: CreateAccountDto, user: User) : Promise<{ data: Account }> {
     
     try {
 
@@ -29,7 +29,7 @@ export class AccountService {
         }
       })
 
-      return newAccount
+      return { data: newAccount };
       
     } catch (error) {
       this.handleErrors(error)
@@ -37,13 +37,15 @@ export class AccountService {
 
   }
 
-  async findAll(user: User) : Promise<Account[]>{
+  async findAll(user: User) : Promise<{ data: Account[] }>{
     
     try {
       
-      return await this.prisma.account.findMany({
+      const accounts = await this.prisma.account.findMany({
         where: { userId: user.id }
       });
+
+      return { data: accounts }
 
     } catch (error) {
       this.handleErrors(error)
@@ -51,7 +53,7 @@ export class AccountService {
 
   }
 
-  async findOne(id: string, user: User) : Promise<Account> {
+  async findOne(id: string, user: User) : Promise<{ data: Account }> {
     
     try {
 
@@ -63,7 +65,7 @@ export class AccountService {
         throw new NotFoundException('Account not found')
       }
 
-      return account;
+      return { data: account };
       
     } catch (error) {
       this.handleErrors(error)
@@ -71,7 +73,7 @@ export class AccountService {
 
   }
 
-  async update(id: string, updateAccountDto: UpdateAccountDto, user: User) : Promise<Account> {
+  async update(id: string, updateAccountDto: UpdateAccountDto, user: User) : Promise<{ data: Account }> {
     
     try {
       
@@ -89,7 +91,7 @@ export class AccountService {
         }
       })
 
-      return updateAccount
+      return { data: updateAccount }
 
     } catch (error) {
       this.handleErrors(error)
@@ -97,7 +99,7 @@ export class AccountService {
 
   }
 
-  async remove(id: string, user: User) : Promise<Object>{
+  async remove(id: string, user: User) : Promise<void>{
     
     try {
       
@@ -107,9 +109,6 @@ export class AccountService {
           userId: user.id
         }
       })
-
-      return { message: 'Account deleted succesfully.', status: HttpStatus.OK }
-      
 
     } catch (error) {
       this.handleErrors(error)

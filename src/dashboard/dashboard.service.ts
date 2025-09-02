@@ -37,7 +37,7 @@ export class DashboardService {
         }
       })
 
-      return { totalBalance: accountTotals._sum.balance, totalAccounts: accountTotals._count.id, currency: 'MXN' }
+      return { data: { totalBalance: accountTotals._sum.balance, totalAccounts: accountTotals._count.id, currency: 'MXN' } }
 
     } catch (error) {
       this.handleErrors(error)
@@ -65,7 +65,7 @@ export class DashboardService {
         _sum: {
           amount: true
         },
-        
+
       })
 
       const expensesPromise = this.prisma.expense.aggregate({
@@ -103,7 +103,7 @@ export class DashboardService {
   }
 
 
-  async getExpensesByCategoryMonthly(expensesByCategoryMonthDto: ExpensesByCategoryMonthDto, user: User) : Promise<Object> {
+  async getExpensesByCategoryMonthly(expensesByCategoryMonthDto: ExpensesByCategoryMonthDto, user: User): Promise<Object> {
 
     try {
 
@@ -112,7 +112,7 @@ export class DashboardService {
       const date = new Date()
       const firstDay = new Date(date.getFullYear(), month, 1)
       const lastDay = new Date(date.getFullYear(), month + 1, 0);
-      
+
 
       const expensesByCategory = await this.prisma.expense.groupBy({
         by: ['categoryId'],
@@ -126,7 +126,7 @@ export class DashboardService {
         _sum: {
           amount: true
         },
-        
+
       })
 
       if (expensesByCategory.length === 0) {
@@ -135,7 +135,7 @@ export class DashboardService {
 
 
       const totalAmount = expensesByCategory.reduce((acc, current) => {
-        
+
         const amountCurrent = current._sum.amount?.toNumber() ?? 0
 
         const total = acc + amountCurrent
@@ -144,7 +144,7 @@ export class DashboardService {
 
       }, 0) || 1;
 
-      
+
       const categoryIds = expensesByCategory.map(expense => expense.categoryId);
 
       const categories = await this.prisma.category.findMany({
@@ -171,11 +171,13 @@ export class DashboardService {
         const percentage = (categoryTotal / totalAmount) * 100;
 
         return {
-          categoryId: expense.categoryId,
-          name: categoryDetails?.name || 'Sin categoria',
-          emoji: categoryDetails?.emoji || '❓',
-          total: categoryTotal,
-          percentage: parseFloat(percentage.toFixed(2))
+          data: {
+            categoryId: expense.categoryId,
+            name: categoryDetails?.name || 'Sin categoria',
+            emoji: categoryDetails?.emoji || '❓',
+            total: categoryTotal,
+            percentage: parseFloat(percentage.toFixed(2))
+          }
         }
       })
 
@@ -184,10 +186,10 @@ export class DashboardService {
     } catch (error) {
       this.handleErrors(error)
     }
-    
+
   }
 
-  async getIncomesByCategoryMonthly(incomesByCategoryMonthDto: IncomesByCategoryMonthDto, user: User) : Promise<Object> {
+  async getIncomesByCategoryMonthly(incomesByCategoryMonthDto: IncomesByCategoryMonthDto, user: User): Promise<Object> {
 
     try {
       const { month } = incomesByCategoryMonthDto;
@@ -195,7 +197,7 @@ export class DashboardService {
       const date = new Date()
       const firstDay = new Date(date.getFullYear(), month, 1)
       const lastDay = new Date(date.getFullYear(), month + 1, 0);
-      
+
 
       const expensesByCategory = await this.prisma.income.groupBy({
         by: ['categoryId'],
@@ -209,7 +211,7 @@ export class DashboardService {
         _sum: {
           amount: true
         },
-        
+
       })
 
       if (expensesByCategory.length === 0) {
@@ -218,7 +220,7 @@ export class DashboardService {
 
 
       const totalAmount = expensesByCategory.reduce((acc, current) => {
-        
+
         const amountCurrent = current._sum.amount?.toNumber() ?? 0
 
         const total = acc + amountCurrent
@@ -227,7 +229,7 @@ export class DashboardService {
 
       }, 0) || 1;
 
-      
+
       const categoryIds = expensesByCategory.map(expense => expense.categoryId);
 
       const categories = await this.prisma.category.findMany({
@@ -264,7 +266,7 @@ export class DashboardService {
         }
       })
 
-      return result;
+      return { data: result };
 
     } catch (error) {
       this.handleErrors(error)
@@ -272,7 +274,7 @@ export class DashboardService {
 
   }
 
-  async getLatestMovements(limitLatestMovementsDto: LimitLatestMovementsDto, user: User) : Promise<MovementDto[]> {
+  async getLatestMovements(limitLatestMovementsDto: LimitLatestMovementsDto, user: User): Promise<Object> {
 
     try {
       const result = await this.prisma.$queryRaw<MovementDto[]>(Prisma.sql`
@@ -289,14 +291,12 @@ export class DashboardService {
         LIMIT 10
       `)
 
-      return result; 
+      return { data: result };
     } catch (error) {
       this.handleErrors(error)
     }
 
   }
-
-
 
   private handleErrors(error: any): never {
 

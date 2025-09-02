@@ -13,15 +13,13 @@ export class RecurringIncomeController {
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.CREATED)
   async create(@GetUser() user: User, @Body() createRecurringIncomeDto: CreateRecurringIncomeDto) {
-    const data = await this.recurringIncomeService.create(user.id, createRecurringIncomeDto);
-    return { data }
+    return await this.recurringIncomeService.create(user.id, createRecurringIncomeDto);
   }
 
   @Get('/')
   @UseGuards(JwtGuard)
   async findAll(@GetUser() user: User) {
-    const data = await this.recurringIncomeService.findAll(user.id);
-    return { data }
+    return await this.recurringIncomeService.findAll(user.id);
   }
 
 }

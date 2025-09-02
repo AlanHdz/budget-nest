@@ -19,8 +19,7 @@ export class DashboardController {
   @ApiResponse({ status: 200, description: 'Get summary incomes and expenses by the user successfully' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getTotalBalance(@GetUser() user: User) {
-    const data = await this.dashboardService.getTotalBalance(user)
-    return { data }
+    return await this.dashboardService.getTotalBalance(user)
   }
 
   @Get('/monthly-flow')
@@ -29,8 +28,7 @@ export class DashboardController {
   @ApiResponse({ status: 200, description: 'Get monthly flow by the user successfully' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getMonthlyFlow(@GetUser() user: User) {
-    const data = await this.dashboardService.getMonthlyFlow(user);
-    return { data }
+    return await this.dashboardService.getMonthlyFlow(user);
   }
 
   @Get('/expenses-by-category')
@@ -39,8 +37,7 @@ export class DashboardController {
   @ApiResponse({ status: 200, description: 'Get expenses by category belongs to user successfully' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getExpensesByCategoryMonth(@Query() expensesByCategoryMonthDto: ExpensesByCategoryMonthDto, @GetUser() user: User) {
-    const data = await this.dashboardService.getExpensesByCategoryMonthly(expensesByCategoryMonthDto, user)
-    return { data }
+    return await this.dashboardService.getExpensesByCategoryMonthly(expensesByCategoryMonthDto, user)
   }
 
   @Get('/incomes-by-category')
@@ -49,8 +46,7 @@ export class DashboardController {
   @ApiResponse({ status: 200, description: 'Get incomes by category belongs to user successfully' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getIncomesByCategoryMonth(@Query() incomesByCategoryMonthDto: IncomesByCategoryMonthDto, @GetUser() user: User) {
-    const data = await this.dashboardService.getIncomesByCategoryMonthly(incomesByCategoryMonthDto, user)
-    return { data }
+    return await this.dashboardService.getIncomesByCategoryMonthly(incomesByCategoryMonthDto, user)
   }
 
   @Get('/latest-movements')
@@ -62,8 +58,7 @@ export class DashboardController {
     @Query() limitLtaestMovementsDto: LimitLatestMovementsDto,
     @GetUser() user: User
   ) {
-    const data = await this.dashboardService.getLatestMovements(limitLtaestMovementsDto, user)
-    return { data }
+    return await this.dashboardService.getLatestMovements(limitLtaestMovementsDto, user)
   }
 
 }

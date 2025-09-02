@@ -20,7 +20,7 @@ export class GoalsService {
    * @param createGoalDto 
    * @returns {Promise<Goal>}
    */
-  async create(userId: string, createGoalDto: CreateGoalDto) : Promise<Goal> {
+  async create(userId: string, createGoalDto: CreateGoalDto): Promise<{ data: Goal }> {
 
     try {
 
@@ -36,12 +36,15 @@ export class GoalsService {
         throw new ConflictException(`Ya existe una meta de tipo ${type} para ${month}/${year}`)
       }
 
-      return this.prisma.goal.create({
+      const goal = await this.prisma.goal.create({
         data: {
           ...createGoalDto,
           userId
         }
       })
+
+
+      return { data: goal }
 
     } catch (error) {
       this.handleErrors(error)
@@ -55,17 +58,19 @@ export class GoalsService {
    * @param year 
    * @returns {Promise<Goal[]>}
    */
-  async findAll(userId: string, year?: number) : Promise<Goal[]> {
+  async findAll(userId: string, year?: number): Promise<{ data: Goal[] }> {
 
     try {
-      
-      return this.prisma.goal.findMany({
+
+      const goals = await this.prisma.goal.findMany({
         where: {
           userId,
           year: year ? Number(year) : undefined
         },
         orderBy: [{ year: 'asc' }, { month: 'asc' }]
       })
+
+      return { data: goals }
 
     } catch (error) {
       this.handleErrors(error)
@@ -79,10 +84,10 @@ export class GoalsService {
    * @param userId 
    * @returns {Promise<goal>}
    */
-  async findOneById(id: string, userId: string) : Promise<Goal> {
+  async findOneById(id: string, userId: string): Promise<{ data: Goal }> {
 
     try {
-      
+
       const goal = await this.prisma.goal.findUnique({
         where: { id, userId }
       })
@@ -91,7 +96,7 @@ export class GoalsService {
         throw new NotFoundException(`Meta con ID ${id} no encontrada`)
       }
 
-      return goal;
+      return { data: goal };
 
     } catch (error) {
       this.handleErrors(error)
@@ -107,10 +112,10 @@ export class GoalsService {
    * @param year 
    * @returns {Promise<Goal>}
    */
-  async findOneByProperties(userId: string, type: GoalType, month: number, year: number) : Promise<Goal> {
+  async findOneByProperties(userId: string, type: GoalType, month: number, year: number): Promise<Goal> {
 
     try {
-      
+
       const goal = await this.prisma.goal.findUnique({
         where: {
           userId_type_month_year: { userId, type, month, year }
@@ -120,7 +125,7 @@ export class GoalsService {
       if (!goal) {
         throw new NotFoundException(`Meta de tipo ${type} para ${month}/${year} no encontrada`)
       }
-      
+
       return goal;
 
     } catch (error) {
@@ -136,15 +141,17 @@ export class GoalsService {
    * @param updateGoalDto 
    * @returns {Promise<Goal>}
    */
-  async update(id: string, userId: string, updateGoalDto: UpdateGoalDto) : Promise<Goal> {
+  async update(id: string, userId: string, updateGoalDto: UpdateGoalDto): Promise<{ data: Goal }> {
     await this.findOneById(id, userId);
 
-    return this.prisma.goal.update({
+    const goalUpdated = await this.prisma.goal.update({
       where: { id },
       data: {
         amount: updateGoalDto.amount,
       },
     });
+
+    return { data: goalUpdated }
   }
 
   /**
@@ -153,15 +160,19 @@ export class GoalsService {
    * @param userId 
    * @returns {Promise<{ message: string, status: number }>}
    */
-  async remove(id: string, userId: string) : Promise<{ message: string; status: number }> {
-    
-    await this.findOneById(id, userId);
-    
-    await this.prisma.goal.delete({
-      where: { id },
-    });
+  async remove(id: string, userId: string): Promise<void> {
 
-    return { message: `Meta con ID "${id}" eliminada exitosamente.`, status: HttpStatus.OK };
+    try {
+
+      await this.findOneById(id, userId);
+
+      await this.prisma.goal.delete({
+        where: { id },
+      });
+
+    } catch (error) {
+      this.handleErrors(error)
+    }
   }
 
   private handleErrors(error: any): never {
@@ -169,8 +180,7 @@ export class GoalsService {
     if (error.response) {
       throw error
     }
-    console.log("dsadsadsada");
-    
+
     this.logger.error(error);
 
     if (error instanceof BadRequestException) {

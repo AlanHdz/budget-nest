@@ -14,7 +14,7 @@ export class CategoryService {
     private readonly prisma: PrismaService
   ) {}
 
-  async create(createCategoryDto: CreateCategoryDto, user: User) : Promise<Category> {
+  async create(createCategoryDto: CreateCategoryDto, user: User) : Promise<{ data: Category }> {
     try {
       
       const { name, type, emoji, color } = createCategoryDto;
@@ -29,14 +29,14 @@ export class CategoryService {
         }
       })
 
-      return newCategory;
+      return { data: newCategory };
 
     } catch (error) {
       this.handleErrors(error)
     }
   }
 
-  async findAll(user: User) : Promise<Category[]> {
+  async findAll(user: User) : Promise<{ data: Category[] }> {
     
     try {
       
@@ -46,7 +46,7 @@ export class CategoryService {
         }
       })
 
-      return categories;
+      return { data: categories };
 
     } catch (error) {
       this.handleErrors(error)
@@ -54,7 +54,7 @@ export class CategoryService {
 
   }
 
-  async findOne(id: string, user: User) : Promise<Category> {
+  async findOne(id: string, user: User) : Promise<{ data: Category }> {
     
     try {
       
@@ -69,7 +69,7 @@ export class CategoryService {
         throw new NotFoundException('Category not found')
       }
 
-      return category;
+      return { data: category };
 
     } catch (error) {
       this.handleErrors(error)
@@ -77,7 +77,7 @@ export class CategoryService {
 
   }
 
-  async update(id: string, updateCategoryDto: UpdateCategoryDto, user: User) : Promise<Category> {
+  async update(id: string, updateCategoryDto: UpdateCategoryDto, user: User) : Promise<{ data: Category }> {
     
     try {
 
@@ -96,7 +96,7 @@ export class CategoryService {
         }
       })
 
-      return updatedCategory;
+      return { data: updatedCategory };
 
     } catch (error) {
       this.handleErrors(error)
@@ -104,7 +104,7 @@ export class CategoryService {
 
   }
 
-  async remove(id: string, user: User) {
+  async remove(id: string, user: User) : Promise<void> {
     
     try {
       
@@ -114,8 +114,6 @@ export class CategoryService {
           userId: user.id
         }
       })
-
-      return { message: 'Category deleted succesfully.', status: HttpStatus.OK }
 
     } catch (error) {
       this.handleErrors(error)

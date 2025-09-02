@@ -14,7 +14,7 @@ export class ExpenseService {
     private readonly prisma: PrismaService
   ) {}
   
-  async create(createExpenseDto: CreateExpenseDto, user: User) : Promise<Expense> {
+  async create(createExpenseDto: CreateExpenseDto, user: User) : Promise<{ data: Expense }> {
     
     try {
       
@@ -67,7 +67,7 @@ export class ExpenseService {
           }
         })
 
-        return newExpense
+        return { data: newExpense }
 
       })
 
@@ -77,7 +77,7 @@ export class ExpenseService {
 
   }
 
-  async findAll(user: User) : Promise<Expense[]> {
+  async findAll(user: User) : Promise<{ data: Expense[] }> {
     
     try {
 
@@ -100,7 +100,7 @@ export class ExpenseService {
         }
       })
       
-      return expenses;
+      return { data: expenses };
 
     } catch (error) {
       this.handleErrors(error)
@@ -108,7 +108,7 @@ export class ExpenseService {
 
   }
 
-  async findOne(id: string, user) : Promise<Expense> {
+  async findOne(id: string, user: User) : Promise<{ data: Expense }> {
   
     try {
       
@@ -135,7 +135,7 @@ export class ExpenseService {
         throw new NotFoundException('Gasto no encontrado')
       }
 
-      return expense;
+      return { data: expense };
 
     } catch (error) {
       this.handleErrors(error)
@@ -143,12 +143,12 @@ export class ExpenseService {
 
   }
 
-  async update(id: string, updateExpenseDto: UpdateExpenseDto, user: User) : Promise<Expense> {
+  async update(id: string, updateExpenseDto: UpdateExpenseDto, user: User) : Promise<{ data: Expense }> {
     
     try {
 
       const { amount } = updateExpenseDto;
-      console.log(typeof amount);
+
       
       const expenseOriginal = await this.prisma.expense.findFirst({
         where: { id: id, userId: user.id }
@@ -158,7 +158,7 @@ export class ExpenseService {
         throw new NotFoundException(`El gasto solicitado no fue encontrado`)
       }
 
-      return this.prisma.$transaction(async (prismaTx) => {
+      const expense = await this.prisma.$transaction(async (prismaTx) => {
 
         await prismaTx.account.update({
           where: { id: expenseOriginal.accountId },
@@ -218,12 +218,14 @@ export class ExpenseService {
 
       })
       
+      return { data: expense }
+
     } catch (error) {
       this.handleErrors(error)
     }
   }
 
-  async remove(id: string, user: User) : Promise<Object> {
+  async remove(id: string, user: User) : Promise<void> {
     
     try {
       
@@ -251,8 +253,6 @@ export class ExpenseService {
         })
 
       })
-
-      return { message: 'Gasto eliminado correctamente.', status: HttpStatus.OK }
 
     } catch (error) {
       this.handleErrors(error)  

@@ -16,13 +16,13 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid()) @db.Uuid
+  id        String    @id @default(uuid()) @db.Uuid
   name      String
-  username  String   @unique
-  email     String   @unique
+  username  String    @unique
+  email     String    @unique
   password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   accounts   Account[]
@@ -32,6 +32,9 @@ model User {
 
   recurringIncomes RecurringIncome[]
   goals            Goal[]
+
+  recurringExpenses RecurringExpense[]
+  budgets           Budget[]
 }
 
 model Account {
@@ -45,11 +48,13 @@ model Account {
   expenses Expense[]
   incomes  Income[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
   deletedAt DateTime?
 
   recurringIncomes RecurringIncome[]
+
+  recurringExpenses RecurringExpense[]
 }
 
 model Category {
@@ -64,11 +69,13 @@ model Category {
   expenses Expense[]
   incomes  Income[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
   deletedAt DateTime?
 
-  recurringIncomes RecurringIncome[]
+  recurringIncomes  RecurringIncome[]
+  recurringExpenses RecurringExpense[]
+  budgets           Budget[]
 }
 
 model Expense {
@@ -86,9 +93,13 @@ model Expense {
   category   Category @relation(fields: [categoryId], references: [id])
   categoryId String   @db.Uuid
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  deletedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  dateExpense DateTime  @default(now())
+  deletedAt   DateTime?
+
+  recurringExpenseId String?           @db.Uuid
+  recurringExpense   RecurringExpense? @relation(fields: [recurringExpenseId], references: [id])
 }
 
 model Income {
@@ -108,8 +119,8 @@ model Income {
 
   dateIncome DateTime @default(now())
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
   deletedAt DateTime?
 
   recurringIncomeId String?          @db.Uuid
@@ -136,9 +147,55 @@ model RecurringIncome {
 
   generatedIncomes Income[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+
+  @@index([nextDate])
+}
+
+model RecurringExpense {
+  id          String    @id @default(uuid()) @db.Uuid
+  title       String
+  amount      Decimal   @db.Decimal(10, 2)
+  frequency   Frequency
+  startDate   DateTime
+  nextDueDate DateTime
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.Uuid
+
+  account   Account @relation(fields: [accountId], references: [id])
+  accountId String  @db.Uuid
+
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String   @db.Uuid
+
+  generatedExpenses Expense[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  @@index([nextDueDate])
+}
+
+model Budget {
+  id     String  @id @default(uuid()) @db.Uuid
+  amount Decimal @db.Decimal(10, 2)
+  month  Int
+  year   Int
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @db.Uuid
+
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String   @db.Uuid
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@unique([userId, categoryId, month, year])
 }
 
 model Goal {
@@ -151,8 +208,8 @@ model Goal {
   user   User   @relation(fields: [userId], references: [id])
   userId String @db.Uuid
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   @@unique([userId, type, month, year])

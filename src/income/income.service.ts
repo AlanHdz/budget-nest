@@ -2,14 +2,11 @@ import { BadRequestException, HttpStatus, Injectable, InternalServerErrorExcepti
 import { CreateIncomeDto } from './dto/create-income.dto';
 import { UpdateIncomeDto } from './dto/update-income.dto';
 import { PrismaClientKnownRequestError } from '../../generated/prisma/runtime/library';
-import { Frequency, Goal, GoalType, Income, Prisma, User } from '../../generated/prisma';
+import { Frequency, Goal, GoalType, Income, Prisma, RecurringIncome, User } from '../../generated/prisma';
 import { PrismaService } from '../prisma/prisma.service';
-import { addMonths, addWeeks, addYears, endOfMonth, startOfMonth, subMonths, subWeeks, subYears } from 'date-fns';
-import { GoalsService } from '../goals/goals.service';
-import { SmartSummary } from './interfaces/smart-summary.interface';
-import { MonthlyGoal } from './interfaces/monthly-goal.interface';
-import { AnnualProjection } from './interfaces/annual-projection.interface';
+import { addMonths, addWeeks, addYears, endOfMonth, getMonth, getYear, startOfMonth, subMonths, subWeeks, subYears } from 'date-fns';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { AnnualProjection, IncomesDashboard, MonthlyGoal, SmartSummary } from './interfaces/income-dashboard.interface';
 
 @Injectable()
 export class IncomeService {
@@ -18,12 +15,10 @@ export class IncomeService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly goalsService: GoalsService
   ) { }
 
   /**
-   * Crea un ingreso
-   * 
+   * Creates a user's income
    * @param createIncomeDto
    * @param user 
    * @returns {Promise<Income>}
@@ -31,24 +26,25 @@ export class IncomeService {
   async create(createIncomeDto: CreateIncomeDto, user: User): Promise<{ data: Income }> {
 
     try {
-      const { accountId, amount, recurringIncomeId } = createIncomeDto;
+
+      const { isRecurring, frequency, ...incomeData } = createIncomeDto
+
+      const { accountId, amount } = incomeData;
 
       const account = await this.prisma.account.findFirst({
         where: { id: accountId, userId: user.id }
       })
 
-      if (!account || account.userId !== user.id) {
+      if (!account) {
         throw new NotFoundException(`La cuenta con ID ${accountId} no fue encontrada`)
       }
 
-      const newIncome = await this.prisma.$transaction(async (prismaTx) => {
+      if (isRecurring && !frequency) {
+        throw new BadRequestException(':a frecuencia es requerida para los ingresos recurrentes.');
+      }
 
-        const newIncome = await prismaTx.income.create({
-          data: {
-            ...createIncomeDto,
-            userId: user.id
-          }
-        })
+
+      const newIncome = await this.prisma.$transaction(async (prismaTx) => {
 
         await prismaTx.account.update({
           where: { id: accountId },
@@ -59,28 +55,41 @@ export class IncomeService {
           }
         })
 
-        if (recurringIncomeId) {
+        let createdIncome: Income;
 
-          const recurringIncome = await prismaTx.recurringIncome.findUnique({
-            where: { id: recurringIncomeId }
-          })
+        if (isRecurring) {
+          const startDate = incomeData.dateIncome ? new Date(incomeData.dateIncome) : new Date()
+          const nextDate = this.calculateNextDate(startDate, frequency)
 
-          if (!recurringIncome || recurringIncome.userId !== user.id) {
-            throw new NotFoundException(`Ingreso recurrente con ID "${recurringIncomeId}" no encontrado.`);
-          }
-
-          const newNextDate = this.calculateNextDate(
-            recurringIncome.nextDate,
-            recurringIncome.frequency
-          )
-
-          await prismaTx.recurringIncome.update({
-            where: { id: recurringIncomeId },
+          const recurringIncome = await prismaTx.recurringIncome.create({
             data: {
-              nextDate: newNextDate
+              title: incomeData.title,
+              amount: incomeData.amount,
+              frequency: frequency ?? Frequency.MONTHLY,
+              startDate,
+              nextDate,
+              userId: user.id,
+              accountId: incomeData.accountId,
+              categoryId: incomeData.categoryId
             }
           })
 
+          createdIncome = await prismaTx.income.create({
+            data: {
+              ...incomeData,
+              userId: user.id,
+              dateIncome: startDate,
+              recurringIncomeId: recurringIncome.id
+            }
+          })
+
+        } else {
+          createdIncome = await prismaTx.income.create({
+            data: {
+              ...incomeData,
+              userId: user.id
+            }
+          })
         }
 
         return newIncome
@@ -97,7 +106,7 @@ export class IncomeService {
   }
 
   /**
-   * Obtiene un ingreso del usuario autenticado
+   * Get a specific user's income
    * @param id 
    * @param user 
    * @returns {Promise<Income>}
@@ -139,7 +148,7 @@ export class IncomeService {
   }
 
   /**
-   * Actualiza el ingreso de un usuario en especifico
+   * Updates a specific user's income
    * @param id 
    * @param updateIncomeDto 
    * @param user 
@@ -149,75 +158,86 @@ export class IncomeService {
 
     try {
 
-      const { accountId, amount } = updateIncomeDto;
+      const { isRecurring, frequency, ...incomeData } = updateIncomeDto;
+
+      const { accountId, amount } = incomeData;
+
+      const account = await this.prisma.account.findFirst({
+        where: { id: accountId, userId: user.id }
+      })
+
+      if (!account) {
+        throw new NotFoundException(`La cuenta con ID ${accountId} no fue encontrada.`)
+      }
 
       const incomeOriginal = await this.prisma.income.findFirst({
         where: { id: id, userId: user.id }
       })
 
       if (!incomeOriginal) {
-        throw new NotFoundException('Income not found')
+        throw new NotFoundException(`El ingreso con ID ${incomeOriginal} no fue encontrado.`)
       }
 
-      const updatedIncome = await this.prisma.$transaction(async (prismaTx) => {
+      const isBecomingRecurring = isRecurring === true && !incomeOriginal.recurringIncomeId;
+
+      if (isBecomingRecurring && !frequency) {
+        throw new BadRequestException('La frecuencia is requerida para hacer un ingreso recurrente.')
+      }
+
+      const finalUpdatedIncome = await this.prisma.$transaction(async (prismaTx) => {
 
         await prismaTx.account.update({
           where: { id: incomeOriginal.accountId },
           data: { balance: { decrement: incomeOriginal.amount } }
         })
 
-        const newAmount = updateIncomeDto.amount ?? incomeOriginal.amount
-        const newAccountId = updateIncomeDto.accountId ?? incomeOriginal.accountId
+        const newAmount = incomeData.amount ?? incomeOriginal.amount
+        const newAccountId = incomeData.accountId ?? incomeOriginal.accountId
+
         await prismaTx.account.update({
           where: { id: newAccountId },
           data: { balance: { increment: newAmount } }
         })
 
-        const oldRecurringId = incomeOriginal.recurringIncomeId;
-        const newRecurringId = updateIncomeDto.recurringIncomeId;
+        const dataForUpdate: any = { ...incomeData }
 
-        // Solo actuamos si el vínculo ha cambiado.
-        if (oldRecurringId !== newRecurringId) {
+        if (isRecurring === true && !incomeOriginal.recurringIncomeId) {
 
-          // Si antes estaba vinculado a algo, debemos revertir la fecha de ese ingreso recurrente.
-          if (oldRecurringId) {
-            const oldRecurringIncome = await prismaTx.recurringIncome.findUnique({ where: { id: oldRecurringId } })
+          const startDate = incomeOriginal.dateIncome;
+          const nextDate = this.calculateNextDate(startDate, frequency)
 
-            if (oldRecurringIncome) {
-              const revertedDate = this.calculatePreviousDate(oldRecurringIncome.nextDate, oldRecurringIncome.frequency)
-              await prismaTx.recurringIncome.update({
-                where: { id: newRecurringId },
-                data: { nextDate: revertedDate }
-              })
+          const newRecurringIncome = await prismaTx.recurringIncome.create({
+            data: {
+              title: incomeData.title || incomeOriginal.title,
+              amount: newAmount,
+              frequency: frequency || Frequency.MONTHLY,
+              startDate,
+              nextDate,
+              userId: user.id,
+              accountId: newAccountId,
+              categoryId: incomeData.categoryId || incomeOriginal.categoryId
             }
+          })
 
-          }
+          dataForUpdate.recurringIncomeId = newRecurringIncome.id
+        } else if (isRecurring === false && incomeOriginal.recurringIncomeId) {
 
-          // Si ahora se está vinculando a algo nuevo, debemos avanzar la fecha de ese nuevo ingreso recurrente.
-          if (newRecurringId) {
-            const newRecurringIncome = await prismaTx.recurringIncome.findUnique({ where: { id: newRecurringId } })
-            if (newRecurringIncome) {
-              const advancedDate = this.calculateNextDate(newRecurringIncome.nextDate, newRecurringIncome.frequency)
-              await prismaTx.recurringIncome.update({
-                where: { id: newRecurringId },
-                data: { nextDate: advancedDate }
-              })
-            }
-          }
+          await prismaTx.recurringIncome.delete({
+            where: { id: incomeOriginal.recurringIncomeId }
+          })
 
+          dataForUpdate.recurringIncomeId = null;
         }
 
-        const updatedIncome = await prismaTx.income.update({
+        const finalUpdatedIncome = await prismaTx.income.update({
           where: { id: id },
-          data: {
-            ...updateIncomeDto
-          }
+          data: dataForUpdate
         })
 
-        return updatedIncome;
+        return finalUpdatedIncome;
       })
 
-      return { data: updatedIncome }
+      return { data: finalUpdatedIncome }
 
     } catch (error) {
       this.handleErrors(error)
@@ -226,7 +246,7 @@ export class IncomeService {
   }
 
   /**
-   * Remueve el ingreso de un usuario en especifico
+   * Removes a specific user's income
    * @param id 
    * @param user 
    * @returns {Promise<Object>}
@@ -266,11 +286,12 @@ export class IncomeService {
   }
 
   /**
-   * Obtiene los ultimos 10 ingresos del usuario
+   * Get last 5 user's incomes
    * @param user 
-   * @returns {Promise<Income[]>}
+   * @param paginationDto
+   * @returns { data: { incomes: Income[], total: number } }
    */
-  async getPaginatedIncomes(user: User, paginationDto: PaginationDto): Promise<{ data:{ incomes: Income[], total: number }}> {
+  async getPaginatedIncomes(user: User, paginationDto: PaginationDto): Promise<{ data: { incomes: Income[], total: number } }> {
 
     try {
 
@@ -322,81 +343,126 @@ export class IncomeService {
   }
 
   /**
-   * Obtiene el resumen inteligente de un usuario
+   * Get all resources for incomes dashboard
    * @param userId 
-   * @returns {Promise<SmartSummary>}
+   * @returns { data: IncomesDashboard }
    */
-  async getSmartSummary(userId: string): Promise<SmartSummary> {
+  async getIncomesDashboard(userId: string) : Promise<{ data: IncomesDashboard  }> {
 
     try {
 
       const today = new Date()
-      const currentMonthStart = startOfMonth(today)
-      const currentMonthEnd = endOfMonth(today)
-      const previousMonthStart = startOfMonth(subMonths(today, 1))
-      const previousMonthEnd = endOfMonth(subMonths(today, 1))
-
+      const dateRanges = {
+        currentMonthStart: startOfMonth(today),
+        currentMonthEnd: endOfMonth(today),
+        previousMonthStart: startOfMonth(subMonths(today, 1)),
+        sixMonthsAgo: subMonths(today, 6),
+      };
 
       const [
+        currentMonthTotalResult,
+        previousMonthTotalResult,
+        totalLast6MonthsResult,
         largestIncomeThisMonth,
-        recurringIncomes,
-        totalLast6Months,
+        allRecurringIncomes,
+        monthlyGoal
       ] = await Promise.all([
-        // Fuente de ingresos mas grande del mes actual
+        this.prisma.income.aggregate({
+          where: {
+            userId,
+            createdAt: {
+              gte: dateRanges.currentMonthStart,
+              lte: dateRanges.currentMonthEnd
+            }
+          },
+          _sum: { amount: true }
+        }),
+        this.prisma.income.aggregate({
+          where: {
+            userId,
+            createdAt:
+              { gte: dateRanges.previousMonthStart, lte: endOfMonth(dateRanges.previousMonthStart) }
+          },
+          _sum: { amount: true }
+        }),
+        this.prisma.income.aggregate({
+          where: {
+            userId,
+            createdAt: { gte: dateRanges.sixMonthsAgo }
+          },
+          _sum: { amount: true }
+        }),
         this.prisma.income.findFirst({
-          where: { userId, createdAt: { gte: currentMonthStart, lte: currentMonthEnd } },
+          where: {
+            userId,
+            createdAt: { gte: dateRanges.currentMonthStart, lte: dateRanges.currentMonthEnd }
+          },
           orderBy: { amount: 'desc' }
         }),
-        // Todos los ingresos recurrentes del usuario
         this.prisma.recurringIncome.findMany({
           where: { userId },
           orderBy: { nextDate: 'asc' }
         }),
-        // Total de ingresos de los ultimos 6 meses para el promedio
-        this.prisma.income.aggregate({
-          where: { userId, createdAt: { gte: subMonths(today, 6) } },
-          _sum: { amount: true }
-        })
+        this.prisma.goal.findUnique({
+          where: {
+            userId_type_month_year: { userId, type: GoalType.INCOME, month: getMonth(today) + 1, year: getYear(today) }
+          }
+        }),
       ])
 
-      // Total de ingresos del mes actual
-      const currentMonthTotal = await this.getCurrentMonthIncome(currentMonthStart, currentMonthEnd, userId);
+      const currentMonthTotal = currentMonthTotalResult._sum.amount?.toNumber() || 0;
+      const previousMonthTotal = previousMonthTotalResult._sum.amount?.toNumber() || 0;
 
-      // Total de ingresos del mes anterior
-      const previousMonthTotal = await this.getPreviousMonthIncome(previousMonthStart, previousMonthEnd, userId);
+      const smartSummary = await this._processSmartSummary(currentMonthTotal, previousMonthTotal, totalLast6MonthsResult._sum.amount?.toNumber() || 0, largestIncomeThisMonth, allRecurringIncomes);
+      const monthlyGoalSummary = await this._processMonthlyGoal(monthlyGoal, currentMonthTotal);
+      const annualProjection = await this._processAnnualProjection(allRecurringIncomes);
 
-      // Tendencia
-      let trend = 0
+      return {
+        data: {
+          smartSummary,
+          monthlyGoal: monthlyGoalSummary,
+          annualProjection,
+        },
+      };
+
+    } catch (error) {
+      this.handleErrors(error)
+    }
+  }
+
+  /**
+   * Processes the data for the Smart Summary component.
+   * @returns {SmartSummary}
+   */
+  private async _processSmartSummary(currentMonthTotal: number, previousMonthTotal: number, totalLast6Months: number, largestIncome: Income | null, recurringIncomes: RecurringIncome[]): Promise<SmartSummary> {
+
+    try {
+
+      let trend = 0;
       if (previousMonthTotal > 0) {
-        trend = ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100;
+        trend = ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100
       } else if (currentMonthTotal > 0) {
         trend = 100;
       }
 
-      // Ingreso promedio mensual
-      const totalForAverage = totalLast6Months._sum.amount?.toNumber() || 0;
-      const averageMontlyIncome = totalForAverage / 6;
+      const averageMonthlyIncome = totalLast6Months / 6;
+      const nextExpectedIncome = recurringIncomes.find(ri => ri.nextDate >= new Date)
 
-      // Proximo ingreso esperado
-      const nextExpectedIncome = recurringIncomes.find(ri => ri.nextDate >= today)
-
-      const smartSummary = {
-        averageMonthlyIncome: parseFloat(averageMontlyIncome.toFixed(2)),
+      return {
+        averageMonthlyIncome: parseFloat(averageMonthlyIncome.toFixed(2)),
         largestSource: {
-          name: largestIncomeThisMonth?.title || 'N/A',
-          amount: largestIncomeThisMonth?.amount?.toNumber() || 0
+          name: largestIncome?.title || 'N/A',
+          amount: largestIncome?.amount?.toNumber() || 0,
         },
         nextExpectedIncome: {
           name: nextExpectedIncome?.title || 'N/A',
-          amount: nextExpectedIncome?.amount?.toNumber() || 0
+          amount: nextExpectedIncome?.amount?.toNumber() || 0,
         },
         trend: {
           percentage: parseFloat(trend.toFixed(1)),
-          vs: 'mes anterior'
-        }
+          vs: 'previous month',
+        },
       }
-
-      return smartSummary
 
     } catch (error) {
       this.handleErrors(error)
@@ -405,120 +471,71 @@ export class IncomeService {
   }
 
   /**
-   * Obtiene la meta mensual de los ingresos de un usuario
-   * @param userId 
-   * @returns {Promise<MonthlyGoal>}
+   * Processes the data for the Monthly Goal
+   * @param monthlyGoal 
+   * @param currentMonthTotal 
+   * @returns {MonthlyGoal | null}
    */
-  async getMonthlyGoal(userId: string): Promise<MonthlyGoal> {
+  private async _processMonthlyGoal(monthlyGoal: Goal | null, currentMonthTotal: number): Promise<MonthlyGoal | null> {
 
+    if (!monthlyGoal) {
+      return null
+    }
+
+    const goalAmount = monthlyGoal.amount.toNumber();
+    const goalPercentage = goalAmount > 0 ? (currentMonthTotal / goalAmount) * 100 : 0;
+
+    return {
+      progress: currentMonthTotal,
+      goal: goalAmount,
+      percentageCompleted: parseFloat(goalPercentage.toFixed(1)),
+      remaining: Math.max(0, goalAmount - currentMonthTotal),
+    };
+
+  }
+
+  /**
+   * Processes the data for Annual Projection
+   * @param recurringIncomes 
+   * @returns { AnnualProjection }
+   */
+  private async _processAnnualProjection(recurringIncomes: RecurringIncome[]): Promise<AnnualProjection> {
     try {
-
-      const today = new Date();
-      const currentMonthStart = startOfMonth(today);
-      const currentMonthEnd = endOfMonth(today);
-
-      let monthlyGoal: Goal | null = null
-
-      monthlyGoal = await this.goalsService.findOneByProperties(
-        userId,
-        GoalType.INCOME,
-        today.getMonth() + 1,
-        today.getFullYear(),
-      )
-
-      // a) Total de Ingresos del Mes Actual
-      const currentMonthTotal = await this.getCurrentMonthIncome(currentMonthStart, currentMonthEnd, userId);
-
-      // Meta mensual
-      const goalAmount = monthlyGoal?.amount?.toNumber() || 0;
-      const goalPercentage = goalAmount > 0 ? (currentMonthTotal / goalAmount) * 100 : 0;
-      const monthlyGoalSummary = {
-        progress: currentMonthTotal,
-        goal: goalAmount,
-        percentageCompleted: parseFloat(goalPercentage.toFixed(1)),
-        remaining: Math.max(0, goalAmount - currentMonthTotal),
+      
+      let projectedAnnualFromRecurring = 0;
+      const multiplier = { 
+        [Frequency.WEEKLY]: 52, 
+        [Frequency.BIWEEKLY]: 26, 
+        [Frequency.MONTHLY]: 12, 
+        [Frequency.YEARLY]: 1 
       };
 
-      return monthlyGoalSummary
+      recurringIncomes.forEach(ri => {
+        projectedAnnualFromRecurring += ri.amount.toNumber() * (multiplier[ri.frequency] || 0);
+      });
 
-    } catch (error) {
-      this.handleErrors(error)
-    }
+      return {
+      recurringMonthlyIncome: parseFloat((projectedAnnualFromRecurring / 12).toFixed(2)),
+      projectedAnnualIncome: parseFloat(projectedAnnualFromRecurring.toFixed(2)),
+      upcomingRecurringIncomes: recurringIncomes.slice(0, 3).map(ri => ({
+        id: ri.id,
+        title: ri.title,
+        amount: ri.amount.toNumber(),
+      })),
+    };
 
-  }
-
-  /**
-   * Obtiene la proyeccion anual de los ingresos de un usuario
-   * @param userId 
-   * @returns {Promise<AnnualProjection>}
-   */
-  async getAnnualProjection(userId: string): Promise<AnnualProjection> {
-
-    try {
-
-      const recurringIncomes = await this.prisma.recurringIncome.findMany({
-        where: { userId },
-        orderBy: { nextDate: 'asc' },
-        take: 3
-      })
-
-      const monthlyRecurringTotal = recurringIncomes.reduce((sum, item) => sum + item.amount.toNumber(), 0)
-
-      const annualProjection = {
-        recurringMonthlyIncome: monthlyRecurringTotal,
-        projectedAnnualIncome: monthlyRecurringTotal * 12,
-        upcomingRecurringIncomes: recurringIncomes.map(ri => ({
-          id: ri.id,
-          title: ri.title,
-          amount: ri.amount.toNumber()
-        }))
-      }
-
-      return annualProjection;
-
-    } catch (error) {
-      this.handleErrors(error)
-    }
-
-  }
-
-  /**
-   * Obtiene el total de ingresos del mes actual
-   * @param currentMonthStart 
-   * @param currentMonthEnd 
-   * @param userId 
-   * @returns {Promise<number>}
-   */
-  private async getCurrentMonthIncome(currentMonthStart: Date, currentMonthEnd: Date, userId: string): Promise<number> {
-
-    try {
-      const currentMonthIncomeRecords = (await this.prisma.income.findMany({ where: { userId, createdAt: { gte: currentMonthStart, lte: currentMonthEnd } } }));
-      const currentMonthTotal = currentMonthIncomeRecords.reduce((sum, income) => sum + income.amount.toNumber(), 0);
-
-      return currentMonthTotal
     } catch (error) {
       this.handleErrors(error)
     }
   }
 
   /**
-   * Obtiene el total de ingresos del mes anterior
-   * @param previousMonthStart 
-   * @param previousMonthEnd 
-   * @param userId 
-   * @returns {Promise<number>}
+   * Calculate the next date for income
+   * @param startDate 
+   * @param frequency 
+   * @returns { Date }
    */
-  private async getPreviousMonthIncome(previousMonthStart: Date, previousMonthEnd: Date, userId: string): Promise<number> {
-    try {
-      const previousMonthIncomeRecords = (await this.prisma.income.findMany({ where: { userId, createdAt: { gte: previousMonthStart, lte: previousMonthEnd } } }));
-      const previousMonthTotal = previousMonthIncomeRecords.reduce((sum, income) => sum + income.amount.toNumber(), 0);
-      return previousMonthTotal
-    } catch (error) {
-      this.handleErrors(error)
-    }
-  }
-
-  private calculateNextDate(currentNexDate: Date, frequency: Frequency): Date {
+  private calculateNextDate(currentNexDate: Date, frequency: Frequency | undefined): Date {
 
     switch (frequency) {
 
@@ -534,16 +551,6 @@ export class IncomeService {
         return currentNexDate
     }
 
-  }
-
-  private calculatePreviousDate(currentNextDate: Date, frequency: Frequency): Date {
-    switch (frequency) {
-      case 'MONTHLY': return subMonths(currentNextDate, 1);
-      case 'WEEKLY': return subWeeks(currentNextDate, 1);
-      case 'BIWEEKLY': return subWeeks(currentNextDate, 2);
-      case 'YEARLY': return subYears(currentNextDate, 1);
-      default: return currentNextDate;
-    }
   }
 
   private handleErrors(error: any): never {

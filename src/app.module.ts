@@ -15,12 +15,15 @@ import { GoalsModule } from './goals/goals.module';
 import { CommonModule } from './common/common.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { BudgetModule } from './budget/budget.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true
     }),
+    ScheduleModule.forRoot({}),
     AuthModule,
     UserModule,
     AccountModule,
@@ -32,7 +35,8 @@ import { BudgetModule } from './budget/budget.module';
     GoalsModule,
     CommonModule,
     PrismaModule,
-    BudgetModule
+    BudgetModule,
+    TasksModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

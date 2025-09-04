@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDateString, IsDecimal, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUUID } from "class-validator";
+import { IsBoolean, IsDateString, IsDecimal, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUUID } from "class-validator";
+import { Frequency } from "../../../generated/prisma";
 
 export class CreateExpenseDto {
 
@@ -44,8 +45,15 @@ export class CreateExpenseDto {
   @IsNotEmpty()
   categoryId: string;
 
-
   @IsDateString()
-  createdAt: Date;
+  dateExpense: string;
+
+  @IsBoolean()
+  @IsOptional()
+  isRecurring?: boolean
+
+  @IsEnum(Frequency)
+  @IsOptional()
+  frequency?: Frequency
 
 }

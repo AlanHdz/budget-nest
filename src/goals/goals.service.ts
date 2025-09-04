@@ -112,7 +112,7 @@ export class GoalsService {
    * @param year 
    * @returns {Promise<Goal>}
    */
-  async findOneByProperties(userId: string, type: GoalType, month: number, year: number): Promise<Goal> {
+  async findOneByProperties(userId: string, type: GoalType, month: number, year: number): Promise<Goal | null> {
 
     try {
 
@@ -121,10 +121,6 @@ export class GoalsService {
           userId_type_month_year: { userId, type, month, year }
         }
       })
-
-      if (!goal) {
-        throw new NotFoundException(`Meta de tipo ${type} para ${month}/${year} no encontrada`)
-      }
 
       return goal;
 

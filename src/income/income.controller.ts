@@ -24,50 +24,27 @@ export class IncomeController {
     return await this.incomeService.create(createIncomeDto, user);
   }
 
-  @Get('')
+  @Get('/dashboard')
   @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Get Latest Movements by user' })
-  @ApiResponse({ status: 200, description: 'Get Latest Movements by user successfully' })
+  @ApiOperation({ summary: "Get dashboard for incomes" })
+  @ApiResponse({ status: 200, description: 'Get dashboard for incomes successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Not found income' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 500, description: 'Error in the server' })
+  async dashboard(@GetUser() user: User) {
+    return await this.incomeService.getIncomesDashboard(user.id);
+  }
+
+  @Get('/latest-movements')
+  @UseGuards(JwtGuard)
+  @ApiOperation({ summary: 'Get Latest user\'s incomes paginated' })
+  @ApiResponse({ status: 200, description: 'Get Latest 5 user\'s incomes paginated successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
   async getPaginationIncomes(@GetUser() user: User, @Query() paginationDto: PaginationDto) {
     return await this.incomeService.getPaginatedIncomes(user, paginationDto);
   }
-
-  @Get('/smart-summary')
-  @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Get Smart Summary by user' })
-  @ApiResponse({ status: 200, description: 'Get Latest Movements by user successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Not found income' })
-  @ApiResponse({ status: 500, description: 'Error in the server' })
-  async getSmartSummary(@GetUser() user: User) {
-    return await this.incomeService.getSmartSummary(user.id);
-  }
-
-  @Get('/monthly-goal')
-  @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Get Monthly Goal by user' })
-  @ApiResponse({ status: 200, description: 'Get Latest Movements by user successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Not found income' })
-  @ApiResponse({ status: 500, description: 'Error in the server' })
-  async getMonthlyGoal(@GetUser() user: User) {
-    return await this.incomeService.getMonthlyGoal(user.id);
-  }
-
-  @Get('/annual-projection')
-  @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Get Annual Projection by user' })
-  @ApiResponse({ status: 200, description: 'Get Latest Movements by user successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Not found income' })
-  @ApiResponse({ status: 500, description: 'Error in the server' })
-  async getAnnualProjection(@GetUser() user:User) {
-    return await this.incomeService.getAnnualProjection(user.id);
-  }
-
 
   @Get(':id')
   @UseGuards(JwtGuard)
@@ -94,10 +71,11 @@ export class IncomeController {
   @Delete(':id')
   @UseGuards(JwtGuard)
   @ApiOperation({ summary: 'Delete an income by user' })
-  @ApiResponse({ status: 200, description: 'Delete an income by user successfully' })
+  @ApiResponse({ status: 204, description: 'Delete an income by user successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
+  @HttpCode(204)
   async remove(@Param('id') id: string, @GetUser() user: User) {
     return await this.incomeService.remove(id, user);
   }

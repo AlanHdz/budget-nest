@@ -59,10 +59,11 @@ export class GoalsController {
   @UseGuards(JwtGuard)
   @Delete(':id')
   @ApiOperation({ summary: 'Remove goals by user' })
-  @ApiResponse({ status: 200, description: 'Get Latest Movements by user successfully' })
+  @ApiResponse({ status: 204, description: 'Get Latest Movements by user successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
+  @HttpCode(204)
   async remove(@Param('id') id: string, @GetUser() user: User) {
     return await this.goalsService.remove(id, user.id)
   }

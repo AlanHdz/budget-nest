@@ -4,10 +4,12 @@ import { DashboardController } from './dashboard.controller';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { GoalsModule } from '../goals/goals.module';
 import { PrismaModule } from '../prisma/prisma.module';
+import { DashboardIncomesService } from './incomes/dashboard-incomes.service';
+import { DashboardExpensesService } from './expenses/dashboard-expenses.service';
 
 @Module({
   controllers: [DashboardController],
-  providers: [DashboardService],
+  providers: [DashboardService, DashboardIncomesService, DashboardExpensesService],
   imports: [GoalsModule, PrismaModule]
 })
 export class DashboardModule {}

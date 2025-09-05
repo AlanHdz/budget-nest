@@ -1,4 +1,4 @@
-import { Frequency } from "../../../generated/prisma";
+import { Frequency } from "../../../../generated/prisma";
 
 
 interface DashboardSummary {

@@ -16,7 +16,7 @@ export class IncomeController {
   @Post()
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create a new income' })
+  @ApiOperation({ summary: 'Cretes new user\'s income' })
   @ApiResponse({ status: 201, description: 'The income has been successfully created.' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
@@ -24,32 +24,20 @@ export class IncomeController {
     return await this.incomeService.create(createIncomeDto, user);
   }
 
-  @Get('/dashboard')
+  @Get()
   @UseGuards(JwtGuard)
-  @ApiOperation({ summary: "Get dashboard for incomes" })
-  @ApiResponse({ status: 200, description: 'Get dashboard for incomes successfully' })
+  @ApiOperation({ summary: 'Get all user\'s incomes' })
+  @ApiResponse({ status: 200, description: 'Get all user\'s incomes successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
-  async dashboard(@GetUser() user: User) {
-    return await this.incomeService.getIncomesDashboard(user.id);
-  }
-
-  @Get('/latest-movements')
-  @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Get Latest user\'s incomes paginated' })
-  @ApiResponse({ status: 200, description: 'Get Latest 5 user\'s incomes paginated successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 500, description: 'Error in the server' })
-  async getPaginationIncomes(@GetUser() user: User, @Query() paginationDto: PaginationDto) {
-    return await this.incomeService.getPaginatedIncomes(user, paginationDto);
+  async findAll(@GetUser() user: User) {
+    return await this.incomeService.findAll(user.id)
   }
 
   @Get(':id')
   @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Get an income by user' })
-  @ApiResponse({ status: 200, description: 'Get an income by user successfully' })
+  @ApiOperation({ summary: 'Get a user\'s income' })
+  @ApiResponse({ status: 200, description: 'Get a user\'s income successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
@@ -59,8 +47,8 @@ export class IncomeController {
 
   @Patch(':id')
   @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Update an income by user' })
-  @ApiResponse({ status: 200, description: 'Update an income by user successfully' })
+  @ApiOperation({ summary: 'Update a user\'s income' })
+  @ApiResponse({ status: 200, description: 'Update a user\'s income successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
@@ -70,8 +58,8 @@ export class IncomeController {
 
   @Delete(':id')
   @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Delete an income by user' })
-  @ApiResponse({ status: 204, description: 'Delete an income by user successfully' })
+  @ApiOperation({ summary: 'Delete a user\'s income' })
+  @ApiResponse({ status: 204, description: 'Delete a user\'s income successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found income' })
   @ApiResponse({ status: 500, description: 'Error in the server' })

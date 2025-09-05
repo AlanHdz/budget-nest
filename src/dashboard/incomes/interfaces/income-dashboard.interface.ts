@@ -18,8 +18,18 @@ export interface AnnualProjection {
   upcomingRecurringIncomes: { id: string; title: string; amount: number; }[];
 }
 
+export interface IncomesByCategory {
+  categoryId: string;
+  name: string;
+  emoji: string;
+  color: string | undefined;
+  total: number;
+  percentage: number;
+}
+
 export interface IncomesDashboard {
   smartSummary: SmartSummary;
   monthlyGoal: MonthlyGoal | null;
   annualProjection: AnnualProjection;
+  incomesByCategorySummary: IncomesByCategory[] | null
 }

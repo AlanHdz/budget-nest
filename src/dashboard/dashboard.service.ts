@@ -21,8 +21,6 @@ export class DashboardService {
 
   private MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
-
-
   async getTotalBalance(user: User): Promise<Object> {
 
     try {
@@ -211,7 +209,6 @@ export class DashboardService {
         _sum: {
           amount: true
         },
-
       })
 
       if (expensesByCategory.length === 0) {

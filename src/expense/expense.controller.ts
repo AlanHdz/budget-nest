@@ -16,7 +16,7 @@ export class ExpenseController {
   @Post()
   @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create a new expense' })
+  @ApiOperation({ summary: 'Creates new user\'s expense' })
   @ApiResponse({ status: 201, description: 'The expense has been successfully created.' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
@@ -24,32 +24,21 @@ export class ExpenseController {
     return await this.expenseService.create(createExpenseDto, user);
   }
 
-  @Get('/dashboard')
-  @UseGuards(JwtGuard)
-  @ApiOperation({ summary: "Get dashboard for expenses" })
-  @ApiResponse({ status: 200, description: 'Get dashboard for expenses successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 500, description: 'Error in the server' })
-  async getDashboard(@GetUser() user: User) {
-    return await this.expenseService.getDashboardExpenses(user.id)
-  }
 
-  @Get('/latest-movements')
-  @ApiOperation({ summary: "Get last 5 user's expenses" })
-  @ApiResponse({ status: 200, description: 'Get last 5 user\'s expenses successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Not found' })
-  @ApiResponse({ status: 500, description: 'Error in the server' })
   @UseGuards(JwtGuard)
-  async getPaginationExpenses(@GetUser() user: User, @Query() paginationDto: PaginationDto) {
-    return await this.expenseService.getPaginatedExpenses(user.id, paginationDto)
+  @Get()
+  @ApiOperation({ summary: 'Get all user\'s expenses' })
+  @ApiResponse({ status: 200, description: 'Get all user\'s expenses successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 500, description: 'Error in the server' })
+  async findAll(@GetUser() user: User) {
+    return await this.expenseService.findAll(user.id)
   }
 
   @Get(':id')
   @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Get an expense by user' })
-  @ApiResponse({ status: 200, description: 'Get an expense by user successfully' })
+  @ApiOperation({ summary: 'Get a user\'s expense' })
+  @ApiResponse({ status: 200, description: 'Get a user\'s expense successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found expense' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
@@ -59,8 +48,8 @@ export class ExpenseController {
 
   @Patch(':id')
   @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Update an expense by user' })
-  @ApiResponse({ status: 200, description: 'Update an expense by user successfully' })
+  @ApiOperation({ summary: 'Update a user\'s expense' })
+  @ApiResponse({ status: 200, description: 'Update a user\'s expense successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found expense' })
   @ApiResponse({ status: 500, description: 'Error in the server' })
@@ -70,8 +59,8 @@ export class ExpenseController {
 
   @Delete(':id')
   @UseGuards(JwtGuard)
-  @ApiOperation({ summary: 'Delete an expense by user' })
-  @ApiResponse({ status: 204, description: 'Delete an expense by user successfully' })
+  @ApiOperation({ summary: 'Delete a user\'s expense' })
+  @ApiResponse({ status: 204, description: 'Delete a user\'s expense successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'Not found expense' })
   @ApiResponse({ status: 500, description: 'Error in the server' })

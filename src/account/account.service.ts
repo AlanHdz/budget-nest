@@ -12,10 +12,10 @@ export class AccountService {
 
   constructor(
     private readonly prisma: PrismaService
-  ) {}
+  ) { }
 
-  async create(createAccountDto: CreateAccountDto, user: User) : Promise<{ data: Account }> {
-    
+  async create(createAccountDto: CreateAccountDto, user: User): Promise<{ data: Account }> {
+
     try {
 
       const { name, type, balance } = createAccountDto;
@@ -30,17 +30,17 @@ export class AccountService {
       })
 
       return { data: newAccount };
-      
+
     } catch (error) {
       this.handleErrors(error)
     }
 
   }
 
-  async findAll(user: User) : Promise<{ data: Account[] }>{
-    
+  async findAll(user: User): Promise<{ data: Account[] }> {
+
     try {
-      
+
       const accounts = await this.prisma.account.findMany({
         where: { userId: user.id }
       });
@@ -53,8 +53,8 @@ export class AccountService {
 
   }
 
-  async findOne(id: string, user: User) : Promise<{ data: Account }> {
-    
+  async findOne(id: string, user: User): Promise<{ data: Account }> {
+
     try {
 
       const account = await this.prisma.account.findUnique({
@@ -66,17 +66,17 @@ export class AccountService {
       }
 
       return { data: account };
-      
+
     } catch (error) {
       this.handleErrors(error)
     }
 
   }
 
-  async update(id: string, updateAccountDto: UpdateAccountDto, user: User) : Promise<{ data: Account }> {
-    
+  async update(id: string, updateAccountDto: UpdateAccountDto, user: User): Promise<{ data: Account }> {
+
     try {
-      
+
       const { name, type, balance } = updateAccountDto
 
       const updateAccount = await this.prisma.account.update({
@@ -99,10 +99,9 @@ export class AccountService {
 
   }
 
-  async remove(id: string, user: User) : Promise<void>{
-    
+  async remove(id: string, user: User): Promise<void> {
+
     try {
-      
       await this.prisma.account.delete({
         where: {
           id,
@@ -113,15 +112,14 @@ export class AccountService {
     } catch (error) {
       this.handleErrors(error)
     }
-
   }
 
-  private handleErrors(error: any) : never {
-  
+  private handleErrors(error: any): never {
+
     if (error.response) {
       throw error
     }
-    
+
     this.logger.error(error);
 
     if (error instanceof BadRequestException) {
@@ -136,6 +134,6 @@ export class AccountService {
     }
 
     throw new InternalServerErrorException(error)
-  
+
   }
 }

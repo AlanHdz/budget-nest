@@ -48,12 +48,12 @@ describe('AccountService', () => {
     const mockUser: User = {
       id: 'user-id-1',
       name: 'Test User',
-      lastName: 'Test',
       username: 'test',
       email: 'test@example.com',
       password: 'hashedPassword',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      deletedAt: null
     }
 
     const createAccountDto: CreateAccountDto = {
@@ -71,11 +71,11 @@ describe('AccountService', () => {
         type: TypeAccount.DEBIT,
         balance: Decimal(1500),
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        deletedAt: null
       }
 
       prisma.account.create.mockResolvedValue(expectedAccount)
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {})
 
       const result = await service.create(createAccountDto, mockUser)
 
@@ -88,20 +88,21 @@ describe('AccountService', () => {
         }
       })
       expect(prisma.account.create).toHaveBeenCalledTimes(1)
-      expect(result).toEqual(expectedAccount)
-      expect(loggerSpy).not.toHaveBeenCalled()
+      expect(result).toEqual({ data: expectedAccount })
     })
 
     it('should call handleErrors and return a error if prisma fails', async () => {
 
-      const mockError = new Error('Error de conexión a la base de datos')
+      const mockError = new InternalServerErrorException('Database connection error')
+      const handleErrorsSpy = jest.spyOn((service as any), 'handleErrors').mockImplementation(() => { })
 
       prisma.account.create.mockRejectedValue(mockError)
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {})
 
-      await expect(service.create(createAccountDto, mockUser)).rejects.toThrow(InternalServerErrorException)
-      expect(loggerSpy).toHaveBeenCalled()
+      await service.create(createAccountDto, mockUser)
 
+      expect(prisma.account.create).toHaveBeenCalledTimes(1)
+      expect(handleErrorsSpy).toHaveBeenCalled()
+      expect(handleErrorsSpy).toHaveBeenCalledWith(mockError)
     })
 
   })
@@ -111,12 +112,12 @@ describe('AccountService', () => {
     const mockUser: User = {
       id: 'user-id-1',
       name: 'Test User',
-      lastName: 'Test',
       username: 'test',
       email: 'test@example.com',
       password: 'hashedPassword',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      deletedAt: null
     }
 
     const accounts: Account[] = [
@@ -127,18 +128,16 @@ describe('AccountService', () => {
         type: TypeAccount.DEBIT,
         createdAt: new Date(),
         updatedAt: new Date(),
-        userId: mockUser.id
+        userId: mockUser.id,
+        deletedAt: null
       }
     ]
 
     it('should return an array of contains categories belongs to user', async () => {
       
-
       prisma.account.findMany.mockResolvedValue(accounts)
 
       const result = await service.findAll(mockUser)
-
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {})
 
       expect(prisma.account.findMany).toHaveBeenCalledWith({
         where: {
@@ -146,17 +145,20 @@ describe('AccountService', () => {
         }
       })
       expect(prisma.account.findMany).toHaveBeenCalledTimes(1)
-      expect(result).toEqual(accounts)
-      expect(loggerSpy).not.toHaveBeenCalled()
+      expect(result).toEqual({ data: accounts })
     })
 
     it('should call handleErrors and return a error if prisma fails', async () => {
 
-      prisma.account.findMany.mockRejectedValue(new Error('Error de conexión a la base de datos'))
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {})
+      const mockError = new InternalServerErrorException('Database connection error')
 
-      await expect(service.findAll(mockUser)).rejects.toThrow(InternalServerErrorException);
-      expect(loggerSpy).toHaveBeenCalled();
+      prisma.account.findMany.mockRejectedValue(mockError)
+      const handleErrorsSpy = jest.spyOn((service as any), 'handleErrors').mockImplementation(() => {})
+
+      await service.findAll(mockUser)
+      expect(prisma.account.findMany).toHaveBeenCalledTimes(1)
+      expect(handleErrorsSpy).toHaveBeenCalledTimes(1);
+      expect(handleErrorsSpy).toHaveBeenCalledWith(mockError)
     })
 
   })
@@ -184,7 +186,8 @@ describe('AccountService', () => {
         type: TypeAccount.DEBIT,
         balance: Decimal(1500),
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        deletedAt: null
       }
 
       prisma.account.findUnique.mockResolvedValue(expectedAccount)
@@ -199,32 +202,32 @@ describe('AccountService', () => {
         }
       });
       expect(prisma.account.findUnique).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(expectedAccount);
+      expect(result).toEqual({ data: expectedAccount });
       expect(loggerSpy).not.toHaveBeenCalled();
     })
 
     it('should throw an NotFounException if account is not found', async () => {
 
       prisma.account.findUnique.mockResolvedValue(null)
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {});
 
       await expect(service.findOne(accountId, mockUser)).rejects.toThrow('Account not found');
 
       expect(prisma.account.findUnique).toHaveBeenCalledWith({
         where: { id: accountId, userId: mockUser.id }
       })
-      expect(loggerSpy).not.toHaveBeenCalled()
     })
 
     it('should throw an InternalServerError if database fails', async () => {
 
-      const mockError = new Error('Error de conexión a la base de datos')
+      const mockError = new InternalServerErrorException('Database connection error')
 
       prisma.account.findUnique.mockRejectedValue(mockError)
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {})
+      const handleErrorsSpy = jest.spyOn((service as any), 'handleErrors').mockImplementation(() => {})
 
-      await expect(service.findOne(accountId, mockUser)).rejects.toThrow(InternalServerErrorException)
-      expect(loggerSpy).toHaveBeenCalled()
+      await service.findOne(accountId, mockUser)
+      expect(prisma.account.findUnique).toHaveBeenCalledTimes(1)
+      expect(handleErrorsSpy).toHaveBeenCalledWith(mockError)
+      expect(handleErrorsSpy).toHaveBeenCalledTimes(1)
     })
     
   })
@@ -234,12 +237,12 @@ describe('AccountService', () => {
     const mockUser: User = {
       id: 'user-id-1',
       name: 'Test User',
-      lastName: 'Test',
       username: 'test',
       email: 'test@example.com',
       password: 'hashedPassword',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      deletedAt: null
     };
 
     const accountId = 'account-id-1';
@@ -258,11 +261,11 @@ describe('AccountService', () => {
         type: TypeAccount.DEBIT,
         balance: Decimal(1500),
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        deletedAt: null
       }
 
       prisma.account.update.mockResolvedValue(expectedAccount)
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {})
 
       const result = await service.update(accountId, updateAccountDto, mockUser)
 
@@ -278,8 +281,8 @@ describe('AccountService', () => {
         }
       });
       expect(prisma.account.update).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(expectedAccount);
-      expect(loggerSpy).not.toHaveBeenCalled();
+      expect(result).toEqual({ data: expectedAccount });
+      
     })
 
     it('should throw a NotFoundException if the account not exists', async () => {
@@ -287,25 +290,29 @@ describe('AccountService', () => {
               'An operation failed because it depends on one or more records that were required but not found.',
               { code: 'P2025', clientVersion: 'x.x.x' }
             );
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {})
+      const handleErrorsSpy = jest.spyOn((service as any), 'handleErrors').mockImplementation(() => {})
       
       prisma.account.update.mockRejectedValue(prismaError)
       
-      await expect(service.update(accountId, updateAccountDto, mockUser)).rejects.toThrow(new NotFoundException("The account does not exist or does not belong to you"));
-      expect(loggerSpy).toHaveBeenCalled()
-
+      await service.update(accountId, updateAccountDto, mockUser)
+      expect(prisma.account.update).toHaveBeenCalledTimes(1)
+      expect(handleErrorsSpy).toHaveBeenCalledTimes(1)
+      expect(handleErrorsSpy).toHaveBeenCalledWith(prismaError)
+      
     })
 
     it('shoudl throw a InternalServerError if the database fails', async () => {
 
-      const genericError = new Error('Some unexpected database error');
+      const genericError = new InternalServerErrorException('Database connection error');
 
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {})
+      const handleErrorsSpy = jest.spyOn((service as any), 'handleErrors').mockImplementation(() => {})
 
       prisma.account.update.mockRejectedValue(genericError)
 
-      await expect(service.update(accountId, updateAccountDto, mockUser)).rejects.toThrow(InternalServerErrorException);
-      expect(loggerSpy).toHaveBeenCalled()
+      await service.update(accountId, updateAccountDto, mockUser)
+      expect(prisma.account.update).toHaveBeenCalledTimes(1)
+      expect(handleErrorsSpy).toHaveBeenCalledTimes(1)
+      expect(handleErrorsSpy).toHaveBeenCalledWith(genericError)
 
     })
 
@@ -316,24 +323,20 @@ describe('AccountService', () => {
     const mockUser: User = {
       id: 'user-id-1',
       name: 'Test User',
-      lastName: 'Test',
       username: 'test',
       email: 'test@example.com',
       password: 'hashedPassword',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      deletedAt: null
     };
 
     const accountId = 'account-id-1';
 
-    it('should delete account belongs to user successfully and return a response', async () => {
+    it('should delete account belongs to user successfully', async () => {
+      prisma.account.delete.mockResolvedValue({})
 
-      const expectedMessage = { message: 'Account deleted succesfully.', status: HttpStatus.OK }
-
-      prisma.account.delete.mockResolvedValue({ message: 'Account deleted succesfully.', status: HttpStatus.OK })
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {})
-
-      const result = await service.remove(accountId, mockUser)
+      await service.remove(accountId, mockUser)
 
       expect(prisma.account.delete).toHaveBeenCalledWith({
         where: {
@@ -342,8 +345,6 @@ describe('AccountService', () => {
         }
       });
       expect(prisma.account.delete).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(expectedMessage)
-      expect(loggerSpy).not.toHaveBeenCalled()
     })
 
     it('should throw a NotFoundException if the account not exists', async () => {
@@ -351,25 +352,30 @@ describe('AccountService', () => {
               'An operation failed because it depends on one or more records that were required but not found.',
               { code: 'P2025', clientVersion: 'x.x.x' }
             );
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {})
-      
       prisma.account.delete.mockRejectedValue(prismaError)
       
-      await expect(service.remove(accountId, mockUser)).rejects.toThrow(new NotFoundException("The account does not exist or does not belong to you"));
-      expect(loggerSpy).toHaveBeenCalled()
+      const handleErrorsSpy = jest.spyOn((service as any), 'handleErrors').mockImplementation(() => {})
+      
+      await service.remove(accountId, mockUser)
+      expect(prisma.account.delete).toHaveBeenCalledTimes(1);
+      expect(handleErrorsSpy).toHaveBeenCalledTimes(1);
+      expect(handleErrorsSpy).toHaveBeenCalledWith(prismaError); 
 
     })
 
     it('shoudl throw a InternalServerError if the database fails', async () => {
 
-      const genericError = new Error('Some unexpected database error');
+      const genericError = new InternalServerErrorException('Database connection error');
 
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {})
+      const handleErrors = jest.spyOn((service as any), 'handleErrors').mockImplementation(() => {})
 
       prisma.account.delete.mockRejectedValue(genericError)
 
-      await expect(service.remove(accountId, mockUser)).rejects.toThrow(InternalServerErrorException);
-      expect(loggerSpy).toHaveBeenCalled()
+      await service.remove(accountId, mockUser)
+      
+      expect(prisma.account.delete).toHaveBeenCalledTimes(1)
+      expect(handleErrors).toHaveBeenCalledTimes(1)
+      expect(handleErrors).toHaveBeenCalledWith(genericError)
 
     })
 

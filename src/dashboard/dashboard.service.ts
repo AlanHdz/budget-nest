@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma, User } from '../../generated/prisma';
 import { PrismaClientKnownRequestError } from '../../generated/prisma/runtime/library';
 import { ExpensesByCategoryMonthDto } from './dto/expenses-by-category-month.dto';
@@ -297,13 +297,9 @@ export class DashboardService {
 
   private handleErrors(error: any): never {
 
-    if (error.response) {
-      throw error;
-    }
-
     this.logger.error(error);
 
-    if (error instanceof BadRequestException) {
+    if (error instanceof HttpException) {
       throw error;
     }
 

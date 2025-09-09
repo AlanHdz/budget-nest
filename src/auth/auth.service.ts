@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { UserService } from '../user/user.service';
@@ -93,13 +93,9 @@ export class AuthService {
 
   private handleErrors(error: any) : never {
 
-    if (error.response) {
-      throw error
-    }
-
     this.logger.error(error);
 
-    if (error instanceof BadRequestException) {
+    if (error instanceof HttpException) {
       throw error;
     }
 

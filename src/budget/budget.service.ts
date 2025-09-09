@@ -1,7 +1,8 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBudgetDto } from './dto/create-budget.dto';
 import { PrismaClientKnownRequestError } from '../../generated/prisma/runtime/library';
+import { Budget } from '../../generated/prisma';
 
 @Injectable()
 export class BudgetService {
@@ -12,7 +13,7 @@ export class BudgetService {
     private prisma: PrismaService
   ) { }
 
-  async create(userId: string, createBudgetDto: CreateBudgetDto) {
+  async create(userId: string, createBudgetDto: CreateBudgetDto) : Promise<{ data: Budget }> {
 
     const { amount, categoryId, month, year } = createBudgetDto
 
@@ -58,11 +59,7 @@ export class BudgetService {
 
     this.logger.error(error);
 
-    if (error.response) {
-      throw error
-    }
-
-    if (error instanceof BadRequestException) {
+    if (error instanceof HttpException) {
       throw error;
     }
 

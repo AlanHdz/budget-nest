@@ -1,4 +1,4 @@
-import { BadRequestException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -122,14 +122,9 @@ export class CategoryService {
   }
 
   private handleErrors(error: any) : never {
-
-    if (error.response) {
-      throw error
-    }
-
     this.logger.error(error);
 
-    if (error instanceof BadRequestException) {
+    if (error instanceof HttpException) {
       throw error;
     }
 

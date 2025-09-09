@@ -87,7 +87,7 @@ describe('CategoryService', () => {
       expect(result).toEqual({ data: mockCategory })
     })
 
-    it('Should call handleErrors and launch a exception if Prisma fails', async () => {
+    it('Should call handleErrors and launch a exception if Database fails', async () => {
 
       const mockError = new InternalServerErrorException('Database connection error')
 

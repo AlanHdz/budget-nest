@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
@@ -82,13 +82,9 @@ export class UserService {
 
   private handleErrors(error: any): never {
 
-    if (error.response) {
-      throw error;
-    }
-
     this.logger.error(error);
 
-    if (error instanceof BadRequestException) {
+    if (error instanceof HttpException) {
       throw error;
     }
 

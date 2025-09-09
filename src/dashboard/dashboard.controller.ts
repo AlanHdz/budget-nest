@@ -18,25 +18,6 @@ export class DashboardController {
     private readonly dashboardIncomesService: DashboardIncomesService
   ) {}
 
-  // @Get('/summary')
-  // @UseGuards(JwtGuard)
-  // @ApiOperation({ summary: 'Get summary incomes and expenses by the user' })
-  // @ApiResponse({ status: 200, description: 'Get summary incomes and expenses by the user successfully' })
-  // @ApiResponse({ status: 500, description: 'Error in the server' })
-  // async getTotalBalance(@GetUser() user: User) {
-  //   return await this.dashboardService.getTotalBalance(user)
-  // }
-
-  // @Get('/monthly-flow')
-  // @UseGuards(JwtGuard)
-  // @ApiOperation({ summary: 'Get monthly flow by the user' })
-  // @ApiResponse({ status: 200, description: 'Get monthly flow by the user successfully' })
-  // @ApiResponse({ status: 500, description: 'Error in the server' })
-  // async getMonthlyFlow(@GetUser() user: User) {
-  //   return await this.dashboardService.getMonthlyFlow(user);
-  // }
-
-
   @Get('/incomes')
   @UseGuards(JwtGuard)
   async getDashboardIncomes(@GetUser() user: User) {

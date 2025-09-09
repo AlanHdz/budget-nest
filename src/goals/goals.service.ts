@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, HttpException, HttpStatus, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
@@ -122,6 +122,10 @@ export class GoalsService {
         }
       })
 
+      if (!goal) {
+        throw new NotFoundException(`Meta no encontrada`)
+      }
+
       return goal;
 
     } catch (error) {
@@ -138,16 +142,19 @@ export class GoalsService {
    * @returns {Promise<Goal>}
    */
   async update(id: string, userId: string, updateGoalDto: UpdateGoalDto): Promise<{ data: Goal }> {
-    await this.findOneById(id, userId);
 
-    const goalUpdated = await this.prisma.goal.update({
-      where: { id },
-      data: {
-        amount: updateGoalDto.amount,
-      },
-    });
+    try {
+      const goalUpdated = await this.prisma.goal.update({
+        where: { id, userId: userId },
+        data: {
+          amount: updateGoalDto.amount,
+        },
+      });
 
-    return { data: goalUpdated }
+      return { data: goalUpdated }
+    } catch (error) {
+      this.handleErrors(error)
+    }
   }
 
   /**
@@ -160,10 +167,8 @@ export class GoalsService {
 
     try {
 
-      await this.findOneById(id, userId);
-
       await this.prisma.goal.delete({
-        where: { id },
+        where: { id, userId },
       });
 
     } catch (error) {
@@ -173,14 +178,8 @@ export class GoalsService {
 
   private handleErrors(error: any): never {
 
-    if (error.response) {
+    if (error instanceof HttpException) {
       throw error
-    }
-
-    this.logger.error(error);
-
-    if (error instanceof BadRequestException) {
-      throw error;
     }
 
     if (

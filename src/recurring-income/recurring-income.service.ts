@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRecurringIncomeDto } from './dto/create-recurring-income.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
@@ -77,13 +77,9 @@ export class RecurringIncomeService {
 
   private handleErrors(error: any): never {
 
-    if (error.response) {
-      throw error;
-    }
-
     this.logger.error(error);
 
-    if (error instanceof BadRequestException) {
+    if (error instanceof HttpException) {
       throw error;
     }
 

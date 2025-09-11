@@ -29,12 +29,12 @@ export class ExpenseService {
 
       const { accountId, amount } = expenseData;
 
-      const account = await this.prisma.account.findFirst({
+      const account = await this.prisma.account.findUnique({
         where: { id: accountId, userId: user.id }
       })
 
       if (!account) {
-        throw new NotFoundException(`La cuenta no fue encuentrada`);
+        throw new NotFoundException(`La cuenta no fue encontrada`);
       }
 
       if (account.balance.toNumber() < Number(amount)) {
@@ -42,7 +42,7 @@ export class ExpenseService {
       }
 
       if (isRecurring && !frequency) {
-        throw new BadRequestException('La frecuencia es requerida para gastos recurrents.')
+        throw new BadRequestException('La frecuencia es requerida para gastos recurrentes')
       }
 
       const newExpense = await this.prisma.$transaction(async (prismaTx) => {
@@ -187,7 +187,7 @@ export class ExpenseService {
 
       const { isRecurring, frequency, ...expenseData } = updateExpenseDto;
 
-      const expenseOriginal = await this.prisma.expense.findFirst({
+      const expenseOriginal = await this.prisma.expense.findUnique({
         where: { id: id, userId: user.id }
       })
 
@@ -307,7 +307,7 @@ export class ExpenseService {
 
     try {
 
-      const expense = await this.prisma.expense.findFirst({
+      const expense = await this.prisma.expense.findUnique({
         where: { id: id, userId: user.id }
       })
 
@@ -315,7 +315,7 @@ export class ExpenseService {
         throw new NotFoundException(`El gasto no fue encontrado`)
       }
 
-      this.prisma.$transaction(async (prismaTx) => {
+      await this.prisma.$transaction(async (prismaTx) => {
 
         await prismaTx.account.update({
           where: { id: expense.accountId },
@@ -325,6 +325,12 @@ export class ExpenseService {
             }
           }
         })
+        
+        if (expense.recurringExpenseId) {
+          await prismaTx.recurringExpense.delete({
+            where: { id: expense.recurringExpenseId }
+          })
+        }
 
         await prismaTx.expense.delete({
           where: { id: id, userId: user.id }

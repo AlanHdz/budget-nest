@@ -16,7 +16,6 @@ export class DashboardService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly goalsService: GoalsService
   ) { }
 
   private MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];

@@ -56,11 +56,11 @@ describe('UserService', () => {
         id: '304923094093',
         email: 'example@example.com',
         name: 'Example',
-        lastName: 'Example last name',
         username: 'example',
         password: 'alan1234',
         createdAt: new Date(),
         updatedAt: new Date(),
+        deletedAt: null
       };
 
       prisma.user.findUnique.mockResolvedValue(mockUser);
@@ -113,11 +113,11 @@ describe('UserService', () => {
         id: '304923094093',
         email: 'example@example.com',
         name: 'Example',
-        lastName: 'Example last name',
         username: 'example',
         password: 'alan1234',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        deletedAt: null
       }
       
       prisma.user.findUnique.mockResolvedValue(mockUser)
@@ -169,11 +169,11 @@ describe('UserService', () => {
         id: '304923094093',
         email: 'example@example.com',
         name: 'Example',
-        lastName: 'Example last name',
         username: 'example',
         password: 'alan1234',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        deletedAt: null
       }
       
       prisma.user.findUnique.mockResolvedValue(mockUser)
@@ -223,13 +223,12 @@ describe('UserService', () => {
       const createUserDto: CreateUserDto = {
         email: 'example@example.com',
         name: 'Test',
-        lastName: 'User',
         username: 'testuser',
         password: 'example1234',
       }
 
       const hashedPassword = 'hashedPassword';
-      const expectedUser: User = { id: 'user-id-1', ...createUserDto, createdAt: new Date(), updatedAt: new Date() };
+      const expectedUser: User = { id: 'user-id-1', ...createUserDto, createdAt: new Date(), updatedAt: new Date(), deletedAt: null };
 
       (bcrypt.hashSync as jest.Mock).mockReturnValue(hashedPassword);
       prisma.user.create.mockResolvedValue(expectedUser)
@@ -241,7 +240,6 @@ describe('UserService', () => {
         data: {
           name: createUserDto.name,
           email: createUserDto.email,
-          lastName: createUserDto.lastName,
           username: createUserDto.username,
           password: hashedPassword
         }

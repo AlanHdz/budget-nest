@@ -10,6 +10,6 @@ import { DashboardExpensesService } from './expenses/dashboard-expenses.service'
 @Module({
   controllers: [DashboardController],
   providers: [DashboardService, DashboardIncomesService, DashboardExpensesService],
-  imports: [GoalsModule, PrismaModule]
+  imports: [PrismaModule]
 })
 export class DashboardModule {}

@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DashboardService } from './dashboard.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { PrismaModule } from '../prisma/prisma.module';
+import { GoalsModule } from '../goals/goals.module';
 
 const prismaMock = {
   income: {
@@ -25,6 +27,7 @@ describe('DashboardService', () => {
           useValue: prismaMock
         }
       ],
+      imports: [PrismaModule]
     }).compile();
 
     service = module.get<DashboardService>(DashboardService);

@@ -82,12 +82,12 @@ describe('AuthService', () => {
     const mockUser: User = {
       id: 'user-id-1',
       name: 'Test User',
-      lastName: 'Test',
       username: 'test',
       email: 'test@example.com',
       password: 'hashedPassword',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      deletedAt: null
     }
 
     it('should return a user and token with valid credentials', async () => {
@@ -120,7 +120,7 @@ describe('AuthService', () => {
       userService.findByEmail.mockResolvedValue(mockUser);
       const bcryptSpy = jest.spyOn(bcrypt, 'compareSync').mockReturnValue(false);
 
-      await expect(service.login(loginUserDto)).rejects.toThrow('Credentials are not valid');
+      await expect(service.login(loginUserDto)).rejects.toThrow('Las credenciales no son validas');
       expect(jest.spyOn(service, 'getTokens')).not.toHaveBeenCalled();
 
     })
@@ -132,7 +132,6 @@ describe('AuthService', () => {
 
     const createUserDto: CreateUserDto = {
       name: 'newTest',
-      lastName: 'user',
       username: 'testuser1',
       email: 'test@test.com',
       password: 'hashedPassword'
@@ -141,12 +140,12 @@ describe('AuthService', () => {
     const mockUser: User = {
       id: 'user-id-1',
       name: 'newTest',
-      lastName: 'user',
       username: 'testuser1',
       email: 'test@test.com',
       password: 'hashedPassword',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      deletedAt: null
     }
 
     it('should create a user and return user with token', async () => {
